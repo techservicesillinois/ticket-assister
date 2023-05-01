@@ -1,0 +1,21 @@
+{
+    "manifest_version": 3,
+    "name": "Ticket Assister",
+    "description": "Helping you handle tickets more efficiently.",
+    "version": "0.0.1",
+	"icons": {
+		"16": "img/icon-light-16.png",
+		"48": "img/icon-light-48.png",
+		"128": "img/icon-light-128.png"
+	},
+    "options_page": "pages/options.html",
+    "action": {
+        "default_popup": "pages/index.html",
+        "default_icon": "img/icon-light-128.png"
+    },
+    "content_scripts": [
+	],
+    "permissions": [
+        "storage"
+    ]
+}

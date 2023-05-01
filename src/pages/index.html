@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket Assister Menu</title>
+    <style>
+        body {
+            /*min-width: 800px;
+            min-height: 600px;*/
+            min-width: 200px;
+            padding: 1em;
+            
+            max-width: 30em;
+            margin: auto;
+
+            /*display: flex;
+            flex-direction: column;*/
+
+            font-family: "Roboto", sans-serif;
+        }
+        .logo {
+            font-family: "Roboto", "Work Sans", sans-serif;
+            background-color: #fff;
+            width: 60vw;
+            max-width: 6em;
+        }
+        .logo-wrapper {
+            display: flex;
+            justify-content: center;
+        }
+
+        .actions {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: center;
+            margin: auto;
+            gap: 1em;
+        }
+
+        .macro {
+            /* this is incredibly ugly */
+            /* todo */
+            background-color: #3e3e3e;
+            border: 1px dashed #c10000;
+            text-align: center;
+            padding: 1em;
+            cursor: pointer;
+        }
+        .macro a {
+            color: #fff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- or could do fancy imports: https://vitejs.dev/guide/assets.html -->
+    <h1 class="logo-wrapper"><img src="/img/icon.svg" alt="TkAst" class="logo" /></h1>
+
+    <div class="actions">
+        <button id="options">Options</button>
+        <button id="macros">Macros &#9660;</button>
+    </div>
+
+    <div id="macros-dropdown"></div>
+
+    <div id="onscreen-errors-wrapper">
+
+    </div>
+
+    <script src="/indexInteractions.js"></script>
+</body>
+</html>

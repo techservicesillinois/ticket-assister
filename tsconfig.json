@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "ES2015",
+        "baseUrl": "./src",
+        "removeComments": true,
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "strict": true,
+    },
+    "include": ["src"],
+}
