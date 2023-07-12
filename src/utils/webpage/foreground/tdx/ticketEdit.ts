@@ -1,10 +1,19 @@
-import { DOMParseError } from "../../errors";
-import { TDXPerson } from "../../tdx/types/person";
+import { DomParseError } from "utils/errors";
+import { TDXPerson } from "utils/tdx/types/person";
+import type { TicketID } from "utils/tdx/types/ticket";
+import { TICKETS_BASE_URL } from "./shared";
+/**
+ * Gets the TDX ticket edit URL
+ * 
+ * All of these functions are **only** designed to work on the *ticket edit* page,
+ * located at this URL.
+ */
+export const getUrl = (ticketID: TicketID) => `${TICKETS_BASE_URL}/Edit?TicketID=${ticketID}`;
 
 /**
  * Updates the Person Requiring Service field in the update service request form
  * `window.location.href` must be like BASE_URL/TDNext/Apps/40/Tickets/Edit?TicketID=X and ready
- * @throws a {@link DOMParseError} if the document is invalid (if not on the proper page)
+ * @throws a {@link DomParseError} if the document is invalid (if not on the proper page)
  * 
  * @remarks
  * Will throw if something on the page is not found as expected.
@@ -27,7 +36,7 @@ export function setRequestorForm(requestor: TDXPerson) {
     // todo click in input form first
     const searchBox: HTMLInputElement | null = document.querySelector(".select2-search > label[for=\"s2id_autogen1_search\"] + input");
     if (searchBox === null) {
-        throw new DOMParseError();
+        throw new DomParseError();
     }
     searchBox.value = "emock3@illinois.edu"; // todo
     const typed = new Event("input");
@@ -36,7 +45,7 @@ export function setRequestorForm(requestor: TDXPerson) {
     setTimeout(() => { // todo make this on dom update
         const resultsBox = searchBox.parentElement?.parentElement?.querySelector(".select2-results"); // multiple of document.querySelector(".select2-search + .select2-result");
         if (!resultsBox) { // resultsBox == null || resultsBox === undefined
-            throw new DOMParseError();
+            throw new DomParseError();
         }
         const clicked = new Event("mousedown");
         // > .select2-result > .select2-result-label > select2-result-subcaption
@@ -47,4 +56,16 @@ export function setRequestorForm(requestor: TDXPerson) {
         // or chrome.debugger, or chrome.scripting.executeScript()
         // test on https://googlechrome.github.io/samples/event-istrusted/
     }, 3000);
+}
+
+/**
+ * Gets the Save button element,
+ * which submits the edit.
+ */
+export function getSaveButton() {
+	const saveEl = <HTMLButtonElement>document.querySelector("button[type=submit]#btnSubmit");
+	if (saveEl === null) {
+		throw new DomParseError();
+	}
+	return saveEl;
 }

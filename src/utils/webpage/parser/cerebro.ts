@@ -15,8 +15,9 @@ export function inboxExists(): boolean {
  * Returns an array of the user's inbox Rules
  * Returns empty if the inbox is not found
  */
-function getInboxRules() {
+export function getInboxRules() {
 	// todo
+	throw new Error("Not Implemented");
 }
 
 /**

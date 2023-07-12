@@ -1,9 +1,22 @@
-import { getRedInfo, getYellowInfo } from "./utils/webpage/foreground/cerebro";
-import { getCurrentTicketNumber } from "./utils/webpage/parser/ticket";
-import { assignResponsibilityBg, getCurrentPerson } from "./utils/webpage/background/ticketActions";
-import { log } from "./utils/logger";
-import { BASE_URL } from "./config";
-import { DOMParseError } from "./utils/errors";
+// Probably make this a service worker
+// https://developer.chrome.com/docs/extensions/reference/webNavigation/
+import { getRedInfo, getYellowInfo } from "utils/webpage/foreground/cerebro";
+import { getCurrentTicketNumber } from "utils/webpage/parser/ticket";
+import { assignResponsibilityBg, getCurrentPerson, getTicketDatumBg } from "utils/webpage/background/ticketActions";
+import { log } from "utils/logger";
+import { BASE_URL } from "config";
+import { Status, boolToCheckboxValue } from "utils/tdx/formNames";
+import * as ticketCreate from "utils/webpage/foreground/tdx/ticketCreate";
+import * as ticketView from "utils/webpage/foreground/tdx/ticketView";
+import * as ticketEdit from "utils/webpage/foreground/tdx/ticketEdit";
+import * as ticketUpdate from "utils/webpage/foreground/tdx/ticketUpdate";
+import { getWysiwygDocument, submitOnCtrlEnter, enableCtrlKLinkingOnWysiwyg } from "utils/webpage/foreground/tdx/shared";
+import { DomParseError } from "utils/errors";
+import { watchDOMChanges } from "utils/lib/observeDOM";
+import { getTicketViewUrl, getTicketEditUrl, getTicketUpdateUrl } from "utils/webpage/foreground/tdx/pageLocator";
+import { addTkAstLogoToPage } from "utils/dishHelp/addLogo";
+import { hotkeyRules, hotkeyRules2, handleHotkeys } from "utils/dishHelp/hotkeyRules";
+import { getFormBox } from "utils/webpage/foreground/tdx/ticketCreate";
 
 /**
  * This script runs functionality based on the current page.
@@ -74,7 +87,7 @@ function rule(item: ToggleableFeature, action: () => void) {
  * Highlights any red flags
  * on a user's Cerebro page
  * 
- * @throws {@link DOMParseError} if the document was not as expected
+ * @throws {@link DomParseError} if the document was not as expected
  */
 rule({ name: "Cerebro flagger/Alert/Red", description: "Provides a summary box at the top with any red flags about an account.\nThese are things that are likely to cause an issue for the user based on their account types.", path: "cerebro.techservices.illinois.edu" }, () => {
     const redInfo = getRedInfo();
@@ -93,7 +106,7 @@ rule({ name: "Cerebro flagger/Alert/Red", description: "Provides a summary box a
 
     const insertBeforeEl = document.querySelector("#groupsettings");
     if (insertBeforeEl === null || insertBeforeEl.parentElement === null) {
-        throw new DOMParseError();
+        throw new DomParseError();
     }
     insertBeforeEl?.parentElement?.insertBefore(alertBox, insertBeforeEl);
 });
@@ -118,15 +131,13 @@ rule({ name: "Cerebro flagger/Show count", description: "Shows a count of the nu
     //getRedInfo().length
 });
 
-rule({ name: "On ticket create/Auto open ticket", description: "Automatically opens a new ticket once you create it, instead of showing the \"Created Successfully\" screen.", path: "https://help.uillinois.edu/SBTDNext/Apps/40/Tickets/TicketNewSuccess" }, () => {
-    const query = new URLSearchParams(window.location.search);
-    const goto = query.get("TicketID") ?? query.get("ticketid");
-    if (goto === null) {
-        log.i("Couldn't redirect to new ticket");
-        return;
-    }
-    // todo ensure that this redirect doesn't compromise the "On ticket create/Auto take ticket" rule
-    window.location.href = BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet?TicketID=" + getCurrentTicketNumber();
+rule({ name: "On ticket create/Auto open ticket", description: "Automatically opens a new ticket once you create it, instead of showing the \"Created Successfully\" screen.", path: `${BASE_URL}/Apps/40/Tickets/TicketNewSuccess` }, () => {
+    // todo ensure that this redirect doesn't compromise the "On ticket create/Auto take ticket" rule from race conditions
+	try {
+		window.location.href = BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet?TicketID=" + getCurrentTicketNumber();
+	} catch (e) {
+		log.e("Couldn't redirect to new ticket");
+	}
     /*
     // this also works:
     for (const a of document.getElementsByTagName("*")) {
@@ -139,24 +150,121 @@ rule({ name: "On ticket create/Auto open ticket", description: "Automatically op
     }
     */
 });
-rule({ name: "On ticket create/Auto take ticket", description: "Automatically takes a ticket (gives you Primary Responsibility) after creating a new ticket with responsibility of UIUC-TechSvc-Help Desk.", path: "https://help.uillinois.edu/SBTDNext/Apps/40/Tickets/TicketNewSuccess" }, () => {
+rule({ name: "On ticket create/Auto take ticket", description: "Automatically takes a ticket (gives you Primary Responsibility) after creating a new ticket with responsibility of UIUC-TechSvc-Help Desk.", path: `${BASE_URL}/Apps/40/Tickets/TicketNewSuccess` }, () => {
     // todo: async/await this?
-    getCurrentPerson().then(currentPerson => {
-        assignResponsibilityBg(getCurrentTicketNumber(), currentPerson)
-            .then(
-                r => (r),
-                () => log.e("Failed to take responsibility for ticket"),
-            );
+	Promise.all([getCurrentPerson(), getTicketDatumBg(getCurrentTicketNumber(), "Responsibility")]).then(([currentPerson, responsibilityField]) => {
+		if (responsibilityField === "UIUC-TechServices-Help Desk") {
+			assignResponsibilityBg(getCurrentTicketNumber(), currentPerson)
+				.then(
+					r => (r),
+					() => log.e("Failed to take responsibility for ticket"),
+				);
+		} else {
+			log.i(`Not taking newly created ticket because responsibility is ${responsibilityField}`);
+		}
     });
 });
 
-rule({ name: "Show TkAst logo on tickets", description: "Displays the Ticket Assister (stylized TkAst) logo on tickets, indicating that Ticket Assister is running and assisting you.", path: "https://help.uillinois.edu/SBTDNext/Apps/40/Tickets/*" }, () => {
-    const logo = document.createElement("img");
-    logo.src = ""; // todo
-    logo.style.width = "100px";
-    logo.style.position = "fixed";
-    logo.style.right = "25px";
-    logo.style.bottom = "25px";
-    logo.style.pointerEvents = "none";
-    document.body.appendChild(logo);
+rule({ name: "Show TkAst logo on tickets", description: "Displays the Ticket Assister (stylized TkAst) logo on tickets, indicating that Ticket Assister is running and assisting you.", path: `${BASE_URL}/Apps/40/Tickets/*` }, () => {
+    addTkAstLogoToPage();
+});
+
+rule({ name: "Ticket create/Ctrl+Enter to submit", description: "Allows you to press Ctrl+Enter to quickly create a ticket in on new ticket screen.", path: `${BASE_URL}/Apps/40/Tickets/New` }, () => {
+	submitOnCtrlEnter(document.body, ticketCreate.getSaveButton());
+	submitOnCtrlEnter(getWysiwygDocument().body, ticketCreate.getSaveButton());
+});
+rule({ name: "Ticket create/Auto select Service Request form", description: "Automatically selects \"Tech Services - New Service Request\" on the create ticket screen.", path: `${BASE_URL}/Apps/40/Tickets/New` }, () => {
+	// todo
+});
+rule({ name: "Ticket create/Quick select Service Request, Incident, Classtech form", description: "Provides a dropdown to quickly select between \"Tech Services - New Service Request\", \"Tech Services - New Incident\", and \"Tech Services - Classtech Problem Report\" on the create ticket screen.", path: `${BASE_URL}/Apps/40/Tickets/New` }, () => {
+	getFormBox().appendChild(ticketCreate.generateQuickSelect());
+});
+rule({ name: "Ticket create/Add link with Ctrl+K", description: "Adds a shortcut (Ctrl+K) to add a link when typing in the view WYSIWYG editor", path: `${BASE_URL}/Apps/40/Tickets/New` }, () => {
+	enableCtrlKLinkingOnWysiwyg();
+});
+
+rule({ name: "Ticket view/Ctrl+Enter to submit comment", description: "Allows you to press Ctrl+Enter to quickly submit a comment when you are typing in the comment box.", path: `${BASE_URL}/Apps/40/Tickets/TicketDet` }, () => {
+	submitOnCtrlEnter(getWysiwygDocument().body, ticketView.getCommentSaveButton());
+});
+rule({ name: "Ticket view/Make comments private by default", description: "Automatically makes sure that Make comments private is checked by default when created a new comment", path: `${BASE_URL}/Apps/40/Tickets/TicketDet` }, () => {
+    ticketView.getCommentMakePrivateButton().value = boolToCheckboxValue(true);
+});
+rule({ name: "Ticket view/Don't warn if private comment is not notifying", description: "Remove's TDX's warning about providing comments without selecting anyone to notify if comment is marked as private", path: `${BASE_URL}/Apps/40/Tickets/TicketDet` }, () => {
+	// only shows up once you start typing
+	watchDOMChanges(ticketView.getCommentBox(), () => {
+		const warningMessage = document.querySelector("div#divWarnNotificationSelection");
+		if (warningMessage === null || !(warningMessage instanceof HTMLElement)) {
+			throw new DomParseError();
+		}
+		if (ticketView.getCommentMakePrivateButton().checked === true && ticketView.commentNotifyIsEmpty()) {
+			warningMessage.style.display = "none";
+		} else {
+			// restore default
+			warningMessage.style.display = "block";
+		}
+	});
+});
+rule({ name: "Ticket view/Hotkeys", description: "Enables the following keyboard shortcuts when not typing in an input box:\n- E => open Edit page\n- U => open Update page\n- T => Take primary responsibility (if unassigned)\n- R => Refresh ticket page\n- C => jump to Comment box", path: `${BASE_URL}/Apps/40/Tickets/TicketDet` }, () => {
+	handleHotkeys(hotkeyRules);
+});
+rule({ name: "Ticket view/Additional Hotkeys", description: "Enables the following keyboard shortcuts when not typing in an input box:\n- F => jump to latest Feed activity", path: `${BASE_URL}/Apps/40/Tickets/TicketDet` }, () => {
+	handleHotkeys(hotkeyRules2);
+});
+rule({ name: "Ticket view/Add link with Ctrl+K", description: "Adds a shortcut (Ctrl+K) to add a link when typing in the view WYSIWYG editor", path: `${BASE_URL}/Apps/40/Tickets/TicketDet` }, () => {
+	enableCtrlKLinkingOnWysiwyg();
+});
+rule({ name: "Ticket view/Gray out unused actions", description: "Grays out infrequently used actions, requiring a double-click to click them.\nThis is to avoid accidentally clicking a different button", path: `${BASE_URL}/Apps/40/Tickets/TicketDet` }, () => {
+	try {
+		ticketView.grayOutActions(["Generate Bomgar Session", "Add to My Work", "Unassign Incident", "Edit Classification", "Set Parent", "Create Parent", "Copy Incident", "Add to Workspace", "Create Incident Template", "Forward", "Assign Workflow"]);
+	} catch (e: unknown) {
+        if (e instanceof Error) { // which it most certainly ts thank you very much
+            log.e(e.message);
+        }
+	}
+});
+
+rule({ name: "Ticket edit/Go back on save", description: "Automatically returns to the ticket detail page after saving changes to an edit.", path: `${BASE_URL}/Apps/40/Tickets/Edit` }, () => {
+	const alertValue = document.querySelector("main > .alert")?.childNodes[2].textContent;
+	if (alertValue && alertValue.trim() === "Changes saved.") {
+		// go back
+		const backButton = <HTMLButtonElement>document.querySelector("#divHeader button[type=\"button\"].btn-danger");
+		if (backButton) {
+			backButton.click();
+		} else {
+			// fallback
+			log.w("Using fallback to return to ticket screen after saving edit");
+			try { 
+				window.location.href = getTicketViewUrl(getCurrentTicketNumber());
+			} catch (e) {
+				// getCurrentTicketNumber could theoretically throw
+				// but TDX wouldn't show a page in which this could happen
+				// just in case...
+				log.e("Failed to return to ticket screen.");
+			}
+		}
+	}
+});
+rule({ name: "Ticket edit/Add link with Ctrl+K", description: "Adds a shortcut (Ctrl+K) to add a link when typing in the view WYSIWYG editor", path: `${BASE_URL}/Apps/40/Tickets/Edit` }, () => {
+	enableCtrlKLinkingOnWysiwyg();
+});
+rule({ name: "Ticket edit/Ctrl+Enter to submit comment", description: "Allows you to press Ctrl+Enter to quickly submit edits.", path: `${BASE_URL}/Apps/40/Tickets/Edit` }, () => {
+	submitOnCtrlEnter(document.body, ticketEdit.getSaveButton());
+	submitOnCtrlEnter(getWysiwygDocument().body, ticketEdit.getSaveButton());
+});
+
+rule({ name: "Ticket update/Add link with Ctrl+K", description: "Adds a shortcut (Ctrl+K) to add a link when typing in the view WYSIWYG editor", path: `${BASE_URL}/Apps/40/Tickets/Update` }, () => {
+	enableCtrlKLinkingOnWysiwyg();
+});
+rule({ name: "Ticket update/Ctrl+Enter to submit comment", description: "Allows you to press Ctrl+Enter to quickly submit an update email.", path: `${BASE_URL}/Apps/40/Tickets/Update` }, () => {
+	submitOnCtrlEnter(document.body, ticketUpdate.getSaveButton());
+	submitOnCtrlEnter(getWysiwygDocument().body, ticketUpdate.getSaveButton());
+});
+rule({ name: "Ticket update/Auto set Awaiting Customer Response", description: "Automatically changes the status to Awaiting Customer Response when updating a ticket that is New, Open, or Reopened.", path: `${BASE_URL}/Apps/40/Tickets/Update` }, () => {
+    const currentStatus = ticketUpdate.getNewStatus();
+    if (currentStatus !== undefined) {
+        //if (["New", "Open", "Reopened"].includes(currentStatus)) {
+        if (new Set([Status["New"], Status["Open"], Status["Reopened"]]).has(currentStatus)) {
+            ticketUpdate.setNewStatus(Status["Awaiting Customer Response"]);
+        }
+    }
 });

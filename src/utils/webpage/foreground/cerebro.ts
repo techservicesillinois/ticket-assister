@@ -1,4 +1,4 @@
-import { DOMParseError } from "../../errors";
+import { DomParseError } from "utils/errors";
 import { noResults, emailDeliveryTypo, valueFor, hasAtLeastOne, inboxExists } from "../parser/cerebro";
 
 /*
@@ -37,7 +37,7 @@ export function openPageWithUINOrNetID(uinOrNetID: string) {
 /**
  * Looks up a NetID or UIN
  * when on the Cerebro page
- * @throws a {@link DOMParseError} if the page is malformatted (typically not on the proper page)
+ * @throws a {@link DomParseError} if the page is malformatted (typically not on the proper page)
  *
  * @remarks
  * MUST be on the proper page or will throw and nothing will happen.
@@ -51,12 +51,12 @@ export function lookupNetIDOrUIN(uinOrNetID: string) {
     }
     const form = document.querySelector("form");
     if (form === null) {
-        throw new DOMParseError();
+        throw new DomParseError();
     }
     const searchInput: HTMLFormElement | null = form.querySelector('input[name="uin_or_netid"]');
     const submitInput: HTMLFormElement | null = form.querySelector('input[type="submit"]');
     if (searchInput === null || submitInput === null) {
-        throw new DOMParseError();
+        throw new DomParseError();
     }
     searchInput.value = uinOrNetID;
     submitInput.click();
@@ -97,6 +97,7 @@ export function getWhiteInfo() {
         throw new Error("NetID or UIN not found");
     }
     // todo
+    throw new Error("Not implemented");
 }
 /**
  * Gets yellow flag info about a user.
@@ -116,6 +117,7 @@ export function getYellowInfo() {
         throw new Error("NetID or UIN not found");
     }
     // todo
+    throw new Error("Not implemented");
 }
 /**
  * Gets red flag info about a user.

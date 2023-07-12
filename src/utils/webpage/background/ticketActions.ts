@@ -1,12 +1,13 @@
 import { getCurrentTicketNumber } from "../parser/ticket";
-import { verifyFetchSuccess, getDomFromText, FetchErrorMessage } from "../../fetch";
-import { log } from "../../logger";
-import { ITDXPersonBasic, ITDXPerson } from "../../tdx/types/person";
-import { TicketID, LimitedHTML, IAssignCommentOptions, ICommentOptions } from "../../tdx/types/ticket";
-import { CreateMethod, SRA, Status, boolToCheckboxValue, getAttributeFor } from "../../tdx/formNames";
-import { BASE_URL } from "../../../config";
-import { DEFAULT_ALLOWED_TAGS, conformsToHTMLTags, getSubstringBetween } from "../../stringParser";
-import { DOMParseError } from "../../errors";
+import { verifyFetchSuccess, getDomFromText, FetchErrorMessage } from "utils/fetch";
+import { log } from "utils/logger";
+import { ITDXPersonBasic, ITDXPerson } from "utils/tdx/types/person";
+import { TicketID, LimitedHTML, IAssignCommentOptions, ICommentOptions } from "utils/tdx/types/ticket";
+import { CreateMethod, SRA, Status, boolToCheckboxValue, getAttributeFor } from "utils/tdx/formNames";
+import { BASE_URL } from "config";
+import { DEFAULT_ALLOWED_TAGS, conformsToHTMLTags, getSubstringBetween } from "utils/stringParser";
+import { getTicketViewUrl } from "../foreground/tdx/pageLocator";
+import { DomParseError } from "utils/errors";
 
 /**
  * Assigns responsibility of the current ticket to the current user
@@ -69,18 +70,18 @@ export function getCurrentPerson(): Promise<ITDXPersonBasic> {
 
 /**
  * Assigns responsibility of a ticket to a user in the background
- * @param ticketId - The ticket to assign reponsibility for
+ * @param ticketID - The ticket to assign reponsibility for
  * @param responsible - The person to assign responsibility to
  * @param comment? - Comments to include in the feed when assigning. Defaults to no note with notification on.
  * @returns a Promise, resolving if successful and rejecting otherwise
  */
-export function assignResponsibilityBg(ticketId: TicketID, responsible: ITDXPersonBasic, comment: IAssignCommentOptions = { text: "", notify: false }): Promise<void> {
+export function assignResponsibilityBg(ticketID: TicketID, responsible: ITDXPersonBasic, comment: IAssignCommentOptions = { text: "", notify: false }): Promise<void> {
     return new Promise((res, rej) => {
-        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketReassign?TicketID=" + ticketId)
+        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketReassign?TicketID=" + ticketID)
             .then(verifyFetchSuccess)
             .then(getDomFromText)
             .then(dom => {
-                const wrappers = dom.querySelectorAll('body > form[action="./TicketReassign?TicketID=' + ticketId + '"] > div.aspNetHidden');
+                const wrappers = dom.querySelectorAll('body > form[action="./TicketReassign?TicketID=' + ticketID + '"] > div.aspNetHidden');
                 const metaData = new Map();
                 if (wrappers.length < 2) {
                     // couldn't find required components to assign responsibility
@@ -122,7 +123,7 @@ export function assignResponsibilityBg(ticketId: TicketID, responsible: ITDXPers
                 }
 
                 // cookies, including __RequestVerificationToken_L1RETmV4dA2 and __AntiXsrfToken, should be included
-                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketReassign?TicketID=" + ticketId, {
+                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketReassign?TicketID=" + ticketID, {
                     method: "POST",
                     body: formData,
                 })
@@ -140,20 +141,20 @@ export function assignResponsibilityBg(ticketId: TicketID, responsible: ITDXPers
 
 /**
 * Adds a comment to a ticket in the background
-* @param ticketId - The ticket to assign reponsibility for
+* @param ticketID - The ticket to assign reponsibility for
 * @param comment? - Optional comments to include in the feed when assigning
 * @returns a Promise, resolving if successful and rejecting otherwise
 * @todo test
 */
-function commentBg(ticketId: TicketID, comment: ICommentOptions): Promise<void> {
+function commentBg(ticketID: TicketID, comment: ICommentOptions): Promise<void> {
     return new Promise((res, rej) => {
         return rej("Not tested");
-        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet?TicketID=" + ticketId)
+        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet?TicketID=" + ticketID)
             .then(verifyFetchSuccess)
             .then(getDomFromText)
             .then(dom => {
                 // should find [[__EVENTTARGET, __EVENTARGUMENT, __VIEWSTATE], [__VIEWSTATEGENERATOR, __EVENTVALIDATION]]
-                const wrappers = dom.querySelectorAll('body > form[action="./TicketDet?TicketID=' + ticketId + '"] > div.aspNetHidden');
+                const wrappers = dom.querySelectorAll('body > form[action="./TicketDet?TicketID=' + ticketID + '"] > div.aspNetHidden');
                 const metaData = new Map();
                 if (wrappers.length < 2) {
                     // couldn't find required components to assign responsibility
@@ -208,7 +209,7 @@ function commentBg(ticketId: TicketID, comment: ICommentOptions): Promise<void> 
                 }
 
                 // cookies, including __RequestVerificationToken_L1RETmV4dA2 and __AntiXsrfToken, should be included
-                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet?TicketID=" + ticketId, {
+                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet?TicketID=" + ticketID, {
                     method: "POST",
                     body: formData,
                 })
@@ -227,7 +228,7 @@ function commentBg(ticketId: TicketID, comment: ICommentOptions): Promise<void> 
 /**
  * Updates a ticket in the background
  * Adds a message to the ticket feed and optionally notifies users.
- * @param ticketId - The ticket to assign reponsibility for
+ * @param ticketID - The ticket to assign reponsibility for
  * @param params: {
  *   status? - Optional new status to set the ticket to
  *     @todo goes off hold date?
@@ -243,20 +244,113 @@ function commentBg(ticketId: TicketID, comment: ICommentOptions): Promise<void> 
  * could make params of type Partial<UpdateValues> to make everything optional
  * use ICommentOptions instead?
  */
-function updateBg(ticketId: TicketID, params: { status?: Status, message: LimitedHTML, notify?: Array<ITDXPerson>, extraNotify?: Array<string>, requestArea?: SRA }): Promise<void> {
+function updateBg(ticketID: TicketID, params: { status?: Status, message: LimitedHTML, notify?: Array<ITDXPerson>, extraNotify?: Array<string>, requestArea?: SRA }): Promise<void> {
     return new Promise((res, rej) => {
         rej("Not implemented");
-        /*fetch(BASE_URL + "/todo?TicketID="+ticketId)
-          .then(verifyFetchSuccess)
-          .then(getDomFromText)
-          .then(dom => {
-          },
-          err => rej(FetchErrorMessage.NETWORK_ERROR));*/
+        /*fetch(BASE_URL + "/todo?TicketID="+ticketID)
+			.then(verifyFetchSuccess)
+			.then(getDomFromText)
+			.then(dom => {
+			},
+			err => rej(FetchErrorMessage.NETWORK_ERROR));*/
+		/* todo adapt this reference:
+		import { getTicketUpdateUrl, getTicketViewUrl } from "../../tdx/pageLocator";
+
+		let requestVerificationToken = null;
+
+		async function closeBoxTicket(ticketID) {
+			return new Promise((res, rej) => {
+				const formData = new FormData();
+				formData.append("__RequestVerificationToken", requestVerificationToken);
+				formData.append("RevealedFieldJson", "");
+				formData.append("NewStatusId", "121");
+				formData.append("NewGoesOffHoldDate", "");
+				formData.append("CommentsIsPrivate", "true");
+				formData.append("CommentsIsPrivate", "false");
+				formData.append("Comments.Content", "per past t#290021");
+				formData.append("Comments.EditorKey", "8edf5929-afb5-4f4e-8cb1-e06f348504a2"); // idk... this changes, but doesn't seem to matter
+				formData.append("OtherPeopleIds", "");
+				formData.append("OtherPeopleJson", "[]");
+				formData.append("OtherEmailAddresses", "");
+				formData.append("AttachmentIds", "");
+				formData.append("KnowledgeBaseArticleOption", "0");
+				formData.append("ArticleShortcutCompositeID", "");
+				formData.append("attribute2523", "2414"); // UIUC-TechSvc-TDX Request Areas
+				fetch(getTicketUpdateUrl(ticketID),
+					{
+						method: "POST",
+						body: formData
+					})
+					.then(res => res.text())
+					.then(
+						text => {
+							if (text.indexOf("The service request was successfully updated.") !== -1) {
+								res();
+							} else {
+								rej("fail");
+							}
+						},
+						err => rej(err)
+					);
+			});
+		}
+		async function updateRequetVerificationToken(ticketID) {
+			// I think we can reuse this across tickets...
+			return new Promise((res, rej) => {
+				fetch(getTicketUpdateUrl(ticketID))
+					.then(res => res.text())
+					.then(text => {
+						const dom = new DOMParser().parseFromString(text, "text/html");
+						try {
+							// <input name="__RequestVerificationToken" type="hidden" value="..." />
+							requestVerificationToken = dom.querySelector("input[name=\"__RequestVerificationToken\"]").value;
+							if (requestVerificationToken != null) {
+								res(true); // OK!
+							}
+						} catch (err) {
+							// probably an invalid DOM el
+							res(false);
+						}
+					},
+					err => console.error("error checking")
+					);
+			});
+		}
+
+		// fn must be async
+		function applyToTickets(ticketArray, fn) {
+			// could return a promise when all are resolved (Promise.resolveAll() or whatever)
+			// todo GET to verify is %like%
+			updateRequetVerificationToken(ticketArray[0])
+				.then(res => {
+					if (res == false) {
+						console.error("failed to get request verification token");
+					}
+					ticketArray.forEach(ticketID => {
+						checkRequestorNameBg(ticketID, "U of I Box (Alias)")
+							.then(requestIsOk => {
+								if (requestIsOk) {
+									if (requestVerificationToken == null) {
+										console.error(`Didn't update t#${ticketID} because requestVerificationToken is null!`);
+									} else {
+										fn(ticketID)
+											.then(()=>console.log(`${ticketID} successfully modified.`))
+											.catch(err=>console.error(ticketID+":", err));
+									}
+								} else {
+									console.warn(`Didn't update t#${ticketID} since the requestor couldn't be verified.`);
+								}
+							}, err => console.log("couldn't verify requestor", err));
+					});
+				});
+		}
+		applyToTickets([], closeBoxTicket);
+		*/
     });
 }
 /**
  * Edits a ticket in the background
- * @param ticketId - The ticket to assign reponsibility for
+ * @param ticketID - The ticket to assign reponsibility for
  * @param params: {
  *   requestor - the requestor field
  *   status - the status
@@ -277,15 +371,15 @@ function updateBg(ticketId: TicketID, params: { status?: Status, message: Limite
  * Also, cannot change Priority or Department at the moment.
  * Defaults are preserved.
  */
-function editBg(ticketId: TicketID, params: { requestor?: ITDXPerson, status?: Status, createdVia?: CreateMethod, requestArea?: SRA, responsible?: ITDXPerson, title?: string, description?: LimitedHTML }): Promise<void> {
+function editBg(ticketID: TicketID, params: { requestor?: ITDXPerson, status?: Status, createdVia?: CreateMethod, requestArea?: SRA, responsible?: ITDXPerson, title?: string, description?: LimitedHTML }): Promise<void> {
     return new Promise((res, rej) => {
         //todo here return rej("Not fully implemented");
-        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/Edit?TicketID=" + ticketId)
+        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/Edit?TicketID=" + ticketID)
             .then(verifyFetchSuccess)
             .then(getDomFromText)
             .then(dom => {
                 /*// find __RequestVerificationToken
-                const rvt = dom.querySelectorAll('body > form[action="/TDNext/Apps/40/Tickets/Edit?ticketId='+ticketId+'"] > input[name="__RequestVerificationToken"]');
+                const rvt = dom.querySelectorAll('body > form[action="/TDNext/Apps/40/Tickets/Edit?ticketID='+ticketID+'"] > input[name="__RequestVerificationToken"]');
                 if (rvt === null || rvt.value === null) {
                   log.w("Don't have all the form data necessary: Request will fail!"); // just a w for now. will e upon net req
                 }*/
@@ -295,7 +389,7 @@ function editBg(ticketId: TicketID, params: { requestor?: ITDXPerson, status?: S
                     try {
                         const wsiwygScriptEl = dom.querySelector("#attribute138-grp > script:nth-child(8)");
                         if (wsiwygScriptEl === null) {
-                            throw new DOMParseError();
+                            throw new DomParseError();
                         }
                         const jsonRaw = getSubstringBetween(wsiwygScriptEl.innerHTML, "var config = JSON.parse('", "');");
                         const json = JSON.parse(jsonRaw);
@@ -325,12 +419,17 @@ function editBg(ticketId: TicketID, params: { requestor?: ITDXPerson, status?: S
                     }
                 }
 
+                // todo clean this up
+                const typescriptIsAnnoyingSometimes: Record<string, string> = {};
                 const existingData: Record<string, string> = Array.from(dom.querySelectorAll("input[name]")).reduce((data, input) => {
-                    // todo fix this
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    data[input.getAttribute("name")!] = input.getAttribute("value");
+                    const inputValue = input.getAttribute("value");
+                    if (inputValue !== null) {
+                        // input has an attribute for name based on querySelectorAll
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        data[input.getAttribute("name")!] = inputValue;
+                    }
                     return data;
-                }, {});
+                }, typescriptIsAnnoyingSometimes);
 
 
 
@@ -376,7 +475,7 @@ function editBg(ticketId: TicketID, params: { requestor?: ITDXPerson, status?: S
                 if (params.requestArea !== undefined) formData.set(getAttributeFor("Request Area"), params.requestArea);
 
                 // cookies, including __RequestVerificationToken_L1RETmV4dA2 and __AntiXsrfToken, should be included
-                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/Edit?TicketID=" + ticketId, {
+                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/Edit?TicketID=" + ticketID, {
                     method: "POST",
                     body: formData,
                 })
@@ -393,4 +492,99 @@ function editBg(ticketId: TicketID, params: { requestor?: ITDXPerson, status?: S
             },
                 () => rej(FetchErrorMessage.NETWORK_ERROR));
     });
+}
+
+
+/**
+ * Verifies the requestor name of a ticket
+ *
+ * **Do not use this function.** It is very janky.
+ * Refactor it to check the requestor's name or email instead.
+ */
+export async function checkRequestorNameBg(ticketID: TicketID, requestorName: string) {
+	return new Promise((res, rej) => {
+		fetch(getTicketViewUrl(ticketID))
+			.then(verifyFetchSuccess)
+			.then(getDomFromText)
+			.then(dom => {
+					try {
+						res(dom.querySelector("div.panel-person-card")?.innerHTML.indexOf(requestorName) !== -1);
+					} catch (err) {
+						// probably an invalid DOM el
+						res(false);
+					}
+				},
+				() => rej(FetchErrorMessage.NETWORK_ERROR)
+			);
+	});
+}
+
+/**
+ * Returns a value from the details of a ticket, or returns undefined.
+ * Must be in the "Details" section of a ticket.
+ * Case-sensitive.
+ *
+ * @remarks
+ * Will get ticket values in the Details section only.
+ * Will return the value as a string.
+ * Also can return the Description entry.
+ * Will **not** return Tags.
+ * May include internal `\n`s, which can be stripped with a utility
+ *
+ * @todo refactor this to return all data about a ticket
+ */
+export async function getTicketDatumBg(ticketID: TicketID, fieldValue: string): Promise<string | undefined> {
+	return new Promise((res, rej) => {
+		fetch(getTicketViewUrl(ticketID))
+			.then(verifyFetchSuccess)
+			.then(getDomFromText)
+			.then(dom => {
+				// todo
+				//const sectionToSearchIn = dom.querySelector("#divDetails");
+				const sectionToSearchIn = dom.querySelector("#divContent")?.children[0].children[0];
+				if (!sectionToSearchIn || !(sectionToSearchIn instanceof HTMLElement)) {
+					return rej(new DomParseError());
+				}
+				const dets = getTicketDatumsRecursively(sectionToSearchIn);
+				return dets[fieldValue];
+			},
+			() => rej(FetchErrorMessage.NETWORK_ERROR)
+		);
+	});
+}
+
+/**
+ * Returns the ticket datums, given the Details element
+ * by searching recursively
+ *
+ * Will return the glob of text following the headings,
+ * which may include line feeds
+ *
+ * @internalRemarks
+ * Looks for the structure div > (span.control-label + div)
+ *
+ * Yes, I know it's "data."
+ */
+export function getTicketDatumsRecursively(node: HTMLElement): Record<string, string> {
+	let results: Record<string, string> = {};
+
+	for (const child of node.children) {
+		const child0 = child.children[0];
+		const child1 = child.children[1];
+        if ((child instanceof HTMLElement && child0 instanceof HTMLElement && child1 instanceof HTMLElement)) { // should always be true
+            if (
+                child0 !== undefined && child0.nodeName === "SPAN" && child0.className === "control-label"
+                && child1 !== undefined && child1.nodeName === "DIV"
+            ) {
+                if (child0.textContent !== null) {
+                    results[child0.textContent.trim()] = child1.textContent?.trim() ?? "";
+                }
+                // else: empty datum key. do not insert
+            } else {
+                results = { ...results, ...getTicketDatumsRecursively(child) };
+            }
+        }
+	}
+
+	return results;
 }

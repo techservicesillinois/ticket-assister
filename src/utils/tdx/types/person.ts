@@ -1,6 +1,6 @@
-import { FetchErrorMessage, getDomFromText, verifyFetchSuccess } from "../../fetch";
-import { DOMParseError } from "../../errors";
-import { BASE_URL } from "../../../config";
+import { FetchErrorMessage, getDomFromText, verifyFetchSuccess } from "utils/fetch";
+import { DomParseError } from "utils/errors";
+import { BASE_URL } from "config";
 
 /**
  * A basic TDX Person containsing an id and a name.
@@ -185,7 +185,7 @@ export class TDXPerson implements ITDXPerson {
                     try {
                         const resultsCollection = dom.querySelector("main div.grdItems-container > table > tbody")?.children;
                         if (resultsCollection === undefined) {
-                            throw new DOMParseError();
+                            throw new DomParseError();
                         }
                         if (resultsCollection.length !== 1) {
                             // ambiguous
@@ -194,13 +194,13 @@ export class TDXPerson implements ITDXPerson {
                         // id is also embedded in resultsCollection[0]!.children[0]!.getAttribute("onclick")
                         const href = resultsCollection[0]?.children[0]?.getAttribute("href");
                         if (href === null) {
-                            throw new DOMParseError();
+                            throw new DomParseError();
                         }
                         const id = href.substring(href.indexOf("?") + 1);
                         //const email = resultsCollection[0]!.children[1]!.textContent!.trim();
                         const name = resultsCollection[0]?.children[0]?.textContent?.trim();
                         if (name === undefined) {
-                            throw new DOMParseError();
+                            throw new DomParseError();
                         }
                         // no UIN or NetID here. Need to get a full TDXPerson
                         return await TDXPerson.fromBasic({ id, name }).catch(e => rej(e));

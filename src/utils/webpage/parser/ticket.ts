@@ -1,4 +1,4 @@
-import type { TicketID } from "../../tdx/types/ticket";
+import type { TicketID } from "utils/tdx/types/ticket";
 
 /**
  * Returns the TicketID of the current ticket being viewed

@@ -8,4 +8,4 @@
  * @remarks
  * Used to make safe type guards.
  */
-export class DOMParseError extends Error {}
+export class DomParseError extends Error {}

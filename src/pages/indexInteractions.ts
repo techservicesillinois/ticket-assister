@@ -121,6 +121,8 @@ interface Macro {
  * ~~verify that Content Security Policy doesn't get angry~~
  * Import these (else filter) based on Options
  * Use file imports-- don't inject JS as text 🤡
+ *
+ * Make sure accessing proper `window` (might need to inject)
  */
 function generateMacroEl(macro: Macro): HTMLElement {
     const wrapper = document.createElement("div");

@@ -1,24 +1,36 @@
 # Todo
 
-## General
+## Next up
+- import webextension-polyfill
+- create page:
+	- finish quick select
+	- auto select Service Request
+	- auto select Phone as source
+	- modify tabindex
+	- hide additional contacts (click to expand)
+- view page:
+	- collapse ticket details
+		- excpet for Responsibility, Request Area, and Age
+	- Button to copy NetID
+		- From person requiring service’s Illinois email
+	- Link to show full Cerebro details, iCard details, or ISA details (POST)
+	- emphasize highlight when prim resp is viewing ticket
+- cache getUser with chrome.storage (refresh weekly)
 
-- Resolve Problems output
-- npm run test
+## General
 
 - work on adding functionality to disher.ts
     - get disher.ts to dispatch properly
     - create options page
-- maybe add logging of error before `rej()`ing with generic error
-    - > throw custom error with message
-- find a way to test these programmatically
-**- update the OneDrive file to have something useful**
-- clean up imports to export `testingData` object with them instead
-- document everything
-- remove `pages/` prefix on manifest.json
-    - get vite to place that directory at the root
-- get disher.ts to work
 - refactor `chrome` to `browser`
     - ensure added to TS global namespace
+- maybe add logging of error before `rej()`ing with generic error
+    - > throw custom error with message
+~~- find a way to test these programmatically~~
+- clean up imports to export `testingData` object with them instead
+- remove `pages/` prefix on manifest.json
+    - get vite to place that directory at the root
+
 - finish spec as defined in doc
 - Prepare for production
     - Set up minifiers
