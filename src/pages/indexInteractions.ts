@@ -1,3 +1,4 @@
+import * as browser from "webextension-polyfill";
 const onScreenErrorsWrapper = document.querySelector("#onscreen-errors-wrapper");
 
 function onScreenError(message: string) {
@@ -17,10 +18,10 @@ if (optionsEl === null) {
     onScreenError("Failed to find options button. You may need to right click the extension to access the options page instead.");
 } else {
     optionsEl.addEventListener("click", () => {
-        if (chrome.runtime.openOptionsPage) {
-            chrome.runtime.openOptionsPage();
+        if (browser.runtime.openOptionsPage) {
+            browser.runtime.openOptionsPage();
           } else {
-            window.open(chrome.runtime.getURL("pages/options.html"));
+            window.open(browser.runtime.getURL("pages/options.html"));
           }
     });
 }

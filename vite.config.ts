@@ -54,7 +54,4 @@ export default defineConfig({
             },
         },*/
     },
-    optimizeDeps: {
-        include: ["chrome"], // todo https://stackoverflow.com/questions/76210670/how-do-i-add-support-for-the-chrome-namespace-to-my-vite-config
-    },
 });

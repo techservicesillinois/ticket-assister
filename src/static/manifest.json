@@ -13,8 +13,10 @@
         "default_popup": "pages/index.html",
         "default_icon": "img/icon-light-128.png"
     },
+    "background": {
+    },
     "content_scripts": [
-	],
+    ],
     "permissions": [
         "storage"
     ]

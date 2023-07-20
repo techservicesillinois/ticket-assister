@@ -1,7 +1,6 @@
 # Todo
 
 ## Next up
-- import webextension-polyfill
 - create page:
 	- finish quick select
 	- auto select Service Request
@@ -22,8 +21,6 @@
 - work on adding functionality to disher.ts
     - get disher.ts to dispatch properly
     - create options page
-- refactor `chrome` to `browser`
-    - ensure added to TS global namespace
 - maybe add logging of error before `rej()`ing with generic error
     - > throw custom error with message
 ~~- find a way to test these programmatically~~
