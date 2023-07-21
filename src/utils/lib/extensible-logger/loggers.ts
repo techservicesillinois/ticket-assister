@@ -13,7 +13,8 @@ export enum LogLevel {
     Error = 3,
     Critical = 4, // app-crashing type error
 }
-// todo maybe store current URL as well as message
+// todo maybe pass current URL as well
+// todo pass file (and function if possible) as well
 export class Logger {
     #transports: Set<Transport> = new Set<Transport>();
     /**

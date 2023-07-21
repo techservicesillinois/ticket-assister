@@ -14,10 +14,13 @@
         "default_icon": "img/icon-light-128.png"
     },
     "background": {
+        "service_worker": "contentScriptUpdater.js"
     },
     "content_scripts": [
     ],
     "permissions": [
-        "storage"
+        "storage",
+        "tabs",
+        "webNavigation"
     ]
 }

@@ -51,6 +51,10 @@ export interface ITDXPerson extends ITDXPersonBasic {
     netid: string,
 }
 /**
+ * The domains for emails which indicate a NetID before the `@` sign
+ */
+const NETID_DOMAINS = ["illinois.edu", "uillinois.edu", "mx.uillinois.edu", "uic.edu", "uis.edu"];
+/**
  * An interfaceable TDX Person containing all of {@link ITDXPersonBasic}'s properties
  * Can be constructed from a variety of data values using the static `fromX()` methods
  * 
@@ -65,19 +69,17 @@ export class TDXPerson implements ITDXPerson {
     readonly email: string;
     readonly uin: number;
     readonly netid: string;
-    static #NETID_DOMAINS = ["illinois.edu", "uillinois.edu", "mx.uillinois.edu", "uic.edu", "uis.edu"]; //private static
     /**
      * Gets this person's NetID, if possible
      * @returns the NetID
      * @throws an {@link Error} if the NetID does not exist
      */
     get netId(): string {
-        const splitIdx = this.email.indexOf("@");
-        const domain = this.email.substring(splitIdx + 1);
-        if (!TDXPerson.#NETID_DOMAINS.includes(domain)) {
-            throw new Error("No NetID for this person.");
-        }
-        return this.email.substring(0, splitIdx);
+		const netID = netIDFromEmail(this.email);
+		if (netID === null) {
+			throw new Error("No NetID for this person.");
+		}
+		return netID;
     }
     /**
      * Creates a new TDXPerson.
@@ -317,7 +319,7 @@ export class TDXPerson implements ITDXPerson {
      * - Rejects if no match or network error with an {@link Error}
      */
     static async fromNetID(netid: string): Promise<TDXPerson> {
-        // todo check all TDXPerson.#NETID_DOMAINS, not just @illinois.edu
+        // todo check all NETID_DOMAINS, not just @illinois.edu
         return this.fromEmail(netid + "@illinois.edu");
     }
     /**
@@ -337,4 +339,22 @@ export class TDXPerson implements ITDXPerson {
         // just overwrite name
         return this.fromId(person.id);
     }
+}
+
+/**
+ * Returns the NetID based on an email
+ * if possible
+ *
+ * @remarks
+ * Email must end in one of the valid `NETID_DOMAINS`
+ * (and be a valid email i.e. no `@` sign)
+ */
+export function netIDFromEmail(email: string): string | null {
+	const splitIdx = email.indexOf("@");
+	const domain = email.substring(splitIdx + 1);
+	if (!NETID_DOMAINS.includes(domain)) {
+		//throw new Error("No NetID for this person.");
+		return null;
+	}
+	return email.substring(0, splitIdx);
 }

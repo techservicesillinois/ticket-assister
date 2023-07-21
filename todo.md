@@ -1,30 +1,32 @@
 # Todo
 
 ## Next up
+
+- refactor some of rules/* to utils/*
+
+- finish options page
+	- show descriptions
+	- tree out
+	- save Custom to storage
 - create page:
 	- finish quick select
 	- auto select Service Request
 	- auto select Phone as source
 	- modify tabindex
 	- hide additional contacts (click to expand)
-- view page:
-	- collapse ticket details
-		- excpet for Responsibility, Request Area, and Age
-	- Button to copy NetID
-		- From person requiring service’s Illinois email
-	- Link to show full Cerebro details, iCard details, or ISA details (POST)
-	- emphasize highlight when prim resp is viewing ticket
-- cache getUser with chrome.storage (refresh weekly)
+- cache getUser in chrome.storage (refresh weekly)
+
+- cerebro connection
 
 ## General
 
-- work on adding functionality to disher.ts
-    - get disher.ts to dispatch properly
-    - create options page
+- try out MS Power BI for log dumping
+- add logging for debugging in production
+- add "@src/*", "@utils/*", and "@config" import paths
+    - fix src/rules/* not allowing absolute imports
+- try to replace `const browser = require("webextension-polyfill");` with `import * as browser from "webextension-polyfill";`
 - maybe add logging of error before `rej()`ing with generic error
     - > throw custom error with message
-~~- find a way to test these programmatically~~
-- clean up imports to export `testingData` object with them instead
 - remove `pages/` prefix on manifest.json
     - get vite to place that directory at the root
 

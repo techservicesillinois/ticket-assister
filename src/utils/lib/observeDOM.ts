@@ -13,7 +13,7 @@ export const watchDOMChanges = (function(){
 
 	return function(watchEl: Element, callback: () => void) {
 		if (MutationObserver){
-			var mutationObserver = new MutationObserver(callback);
+			const mutationObserver = new MutationObserver(callback);
 			mutationObserver.observe(watchEl, { childList: true, subtree: true });
 			return mutationObserver
 		} else if (window.addEventListener) { // browser support fallback

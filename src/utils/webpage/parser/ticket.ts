@@ -13,7 +13,7 @@ import type { TicketID } from "utils/tdx/types/ticket";
 export function getCurrentTicketNumber(): TicketID {
     const search = new URLSearchParams(window.location.search);
     const a = parseInt(search.get("TicketID") ?? search.get("ticketid") ?? '');
-    if (isNaN(a)) { // query is blank or null
+    if (Number.isNaN(Number(a))) { // query is blank or null
         throw new Error("Unable to get current ticket id");
     }
     return a;

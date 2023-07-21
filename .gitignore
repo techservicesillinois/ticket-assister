@@ -23,6 +23,9 @@ node_modules/
 # build / generate output
 build/
 
+# releases (production builds)
+releases/
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged

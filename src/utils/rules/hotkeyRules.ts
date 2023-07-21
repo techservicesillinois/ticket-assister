@@ -1,8 +1,10 @@
-import { getCurrentTicketNumber } from "utils/webpage/parser/ticket";
-import { getCommentBox, scrollIntoViewWithHeader } from "utils/webpage/foreground/tdx/ticketView";
-import { getTicketEditUrl, getTicketUpdateUrl } from "utils/webpage/foreground/tdx/pageLocator";
-import { log } from "utils/logger";
-import { TICKETS_BASE_URL } from "utils/webpage/foreground/tdx/shared";
+// todo: "utils/*" paths won't work
+	// replace "../../utils" with "utils"
+import { getCurrentTicketNumber } from "../../utils/webpage/parser/ticket";
+import { getCommentBox, scrollIntoViewWithHeader } from "../../utils/webpage/foreground/tdx/ticketView";
+import { getTicketEditUrl, getTicketUpdateUrl } from "../../utils/webpage/foreground/tdx/pageLocator";
+import { log } from "../../utils/logger";
+import { TICKETS_BASE_URL } from "../../utils/webpage/foreground/tdx/shared";
 
 /**
  * Sets up hotkeys based on rules

@@ -12,6 +12,17 @@ function onScreenError(message: string) {
     }
 }
 
+// Feedback
+const feedbackEl = document.querySelector("#feedback");
+const FEEDBACK_LINK = "https://forms.gle/LRpER2t69MrTVqtD8";
+if (feedbackEl === null) {
+	onScreenError(`Failed to find feedback button. You can submit feedback directly at ${FEEDBACK_LINK}`);
+} else {
+	feedbackEl.addEventListener("click", () => {
+		window.open(FEEDBACK_LINK, "_blank");
+	});
+}
+
 // Options
 const optionsEl = document.querySelector("#options");
 if (optionsEl === null) {
@@ -20,9 +31,9 @@ if (optionsEl === null) {
     optionsEl.addEventListener("click", () => {
         if (browser.runtime.openOptionsPage) {
             browser.runtime.openOptionsPage();
-          } else {
+		} else {
             window.open(browser.runtime.getURL("pages/options.html"));
-          }
+		}
     });
 }
 
@@ -109,7 +120,10 @@ function showMacrosDropdown() {
 
 interface Macro {
     name: string,
-    script: string,
+	/**
+	 * The relative path to the macro script
+	 */
+    path: string,
 }
 /**
  * Generates a macro element for a list of macros
@@ -128,9 +142,11 @@ interface Macro {
 function generateMacroEl(macro: Macro): HTMLElement {
     const wrapper = document.createElement("div");
     wrapper.classList.add("macro");
-    const element = document.createElement("a");
+    const element = document.createElement("button");
     element.textContent = macro.name;
-    element.href = `javascript:(()=>{${macro.script}})();`;
+	// todo
+	//import script from `${macro.path};
+	//element.addEventListener("click", script);
     wrapper.appendChild(element);
     return wrapper;
 }
@@ -140,12 +156,12 @@ function generateMacroEl(macro: Macro): HTMLElement {
         return;
     }
     hideMacrosDropdown();
-    // todo selectively add these macros based on settings
 
+	// todo
     const macros: Array<Macro> = [
         {
             name: "Test",
-            script: "alert('success')",
+            path: "../macros.ts",
         },
     ];
 

@@ -9,12 +9,14 @@ const assetsDir = path.resolve(__dirname, "src/static");
 const outDir = path.resolve(__dirname, "build");
 
 export default defineConfig({
-    /*resolve: {
+    resolve: {
         alias: {
-            "@src": rootDir,
-            "@assets": assetsDir,
+            //"src": rootDir,
+            //"@assets": assetsDir,
+            "utils": path.resolve(rootDir, "utils"),
+            "config": path.resolve(rootDir, "config"),
         },
-    },*/
+    },
     root: rootDir,
     publicDir: assetsDir,
     build: {
@@ -33,6 +35,7 @@ export default defineConfig({
                 pagesDir + "/indexInteractions.ts",
                 pagesDir + "/optionsInteractions.ts",
                 // content scripts
+                rootDir + "/utils/rules/contentScriptUpdater.ts",
                 //contentScriptsDir + "",
             ],
             name: "Ticket Assister",

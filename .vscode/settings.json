@@ -1,3 +1,7 @@
 {
     "eslint.lintTask.enable": true,
+    "search.exclude": {
+        "**/node_modules": true,
+        "build": true
+    },
 }

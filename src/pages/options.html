@@ -13,6 +13,29 @@
             font-style: italic;
             font-size: 0.75em;
         }
+		.presets-wrapper {
+			display: flex;
+			flex-direction: row;
+		}
+		
+		#options-wrapper > .branch {
+			font-weight: bold;
+		}
+		#options-wrapper .branch {
+			list-style-type: none;
+		}
+		
+		.fade {
+			animation: fade ease 1000ms;
+		}
+		@keyframes fade {
+			0% { opacity: 1; }
+			100% { opacity: 0; }
+		}
+
+        .download-logs {
+            /* todo style download logs button */
+        }
     </style>
     <!--<script type="application/javascript" src="browser-polyfill.js"></script>-->
 </head>
@@ -21,13 +44,19 @@
 
     <p class="subtitle">Enable/disable features</p>
 
-    <div>
+    <div class="presets-wrapper">
         <p>Preset: </p>
         <select id="presets">
             <!-- populated in script -->
         </select>
     </div>
+	
+	<p id="think-tank"></p>
+	
+	<div id="options-wrapper">
+		<!-- populated in script -->
+	</div>
 
-    <script src="optionsInteractions.js"></script>
+    <script src="/optionsInteractions.js"></script>
 </body>
 </html>

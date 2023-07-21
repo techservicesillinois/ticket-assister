@@ -149,12 +149,12 @@ export function assignResponsibilityBg(ticketID: TicketID, responsible: ITDXPers
 function commentBg(ticketID: TicketID, comment: ICommentOptions): Promise<void> {
     return new Promise((res, rej) => {
         return rej("Not tested");
-        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet?TicketID=" + ticketID)
+        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet.aspx?TicketID=" + ticketID)
             .then(verifyFetchSuccess)
             .then(getDomFromText)
             .then(dom => {
                 // should find [[__EVENTTARGET, __EVENTARGUMENT, __VIEWSTATE], [__VIEWSTATEGENERATOR, __EVENTVALIDATION]]
-                const wrappers = dom.querySelectorAll('body > form[action="./TicketDet?TicketID=' + ticketID + '"] > div.aspNetHidden');
+                const wrappers = dom.querySelectorAll('body > form[action="./TicketDet.aspx?TicketID=' + ticketID + '"] > div.aspNetHidden');
                 const metaData = new Map();
                 if (wrappers.length < 2) {
                     // couldn't find required components to assign responsibility
@@ -209,7 +209,7 @@ function commentBg(ticketID: TicketID, comment: ICommentOptions): Promise<void> 
                 }
 
                 // cookies, including __RequestVerificationToken_L1RETmV4dA2 and __AntiXsrfToken, should be included
-                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet?TicketID=" + ticketID, {
+                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet.aspx?TicketID=" + ticketID, {
                     method: "POST",
                     body: formData,
                 })
