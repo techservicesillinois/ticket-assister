@@ -1,6 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const browser = require("webextension-polyfill");
-import { prefixRecordWith } from "utils/prefixObject";
+import * as browser from "webextension-polyfill";
+import presets from "../../rules/presets";
+import { prefixRecordWith } from "utils/object";
 
 /**
  * The storage API to use.
@@ -9,8 +9,8 @@ import { prefixRecordWith } from "utils/prefixObject";
  * browser.storage.sync = synced across Chrome profile
  *
  * In storageArea, we are storing:
- * - Current preset [one of presets or "Custom"]
- * - "Custom" preset settings
+ * - Current preset [one of the presets (including CUSTOM_PRESET)]
+ * - Custom preset settings
  *   - string => boolean for each
  */
 export const storageArea = browser.storage.sync;
@@ -29,7 +29,7 @@ export const customPresetRulePrefix = "rule-";
  * @internalRemarks
  * beware of runtime.lastError
  */
-export async function updateRuleStatus(name: string, value: boolean): Promise<void> {
+export async function updateCustomRuleStatus(name: string, value: boolean): Promise<void> {
 	await storageArea.set({ [`${customPresetRulePrefix}${name}`]: value });
 	return;
 }
@@ -40,7 +40,7 @@ export async function updateRuleStatus(name: string, value: boolean): Promise<vo
  *
  * @returns a {@link Promise}, which resolves on write success and rejects on failure
  */
-export async function updateRuleStatusMultiple(optionStatuses: Record<string, boolean>): Promise<void> {
+export async function updateCustomRuleStatusMultiple(optionStatuses: Record<string, boolean>): Promise<void> {
 	await storageArea.set(prefixRecordWith(optionStatuses, customPresetRulePrefix));
 	return;
 }
@@ -56,7 +56,7 @@ export async function updateRuleStatusMultiple(optionStatuses: Record<string, bo
  * @internalRemarks
  * can use storageArea.get({ key: defaultValue });
  */
-export async function getRuleStatus(optionName: string): Promise<boolean | null> {
+export async function getCustomRuleStatus(optionName: string): Promise<boolean | null> {
 	const value = await storageArea.get(optionName);
 	if (value === null) {
 		return null;
@@ -68,8 +68,7 @@ export async function getRuleStatus(optionName: string): Promise<boolean | null>
 	return valueBool;
 }
 /**
- * Gets the value of a rule
- * i.e. is it on or off currently
+ * Gets the values (i.e. on or off) of multiple rules
  *
  * Nonexistant keys *and keys with an invalid value* are set to null
  *
@@ -78,16 +77,37 @@ export async function getRuleStatus(optionName: string): Promise<boolean | null>
  * (i.e. not a boolean)
  *
  * For bulk retrieval
+ * 
+ * @internalRemarks
+ * This could alternatively return a Promise<**Map**<string, boolean | null>>
  */
-export async function getRuleStatusMultiple(optionNames: Array<string>): Promise<Array<boolean | null>> {
+export async function getCustomRuleStatusMultiple(optionNames: Array<string>): Promise<Record<string, boolean | null>> {
 	const values: Record<string, string> = await storageArea.get(optionNames);
-	return Object.entries(values).map(([key, value]) => {
+	const ret: Record<string, boolean | null> = {};
+	Object.entries(values).map(([key, value]) => {
 		if (value === null) {
 			return null;
 		}
 		const valueBool: boolean | null = stringToBoolean(value);
-		return valueBool;
+		ret[key] = valueBool;
 	});
+	return ret;
+}
+/**
+ * Gets the values (i.e. on or off) of all custom rules
+ * stored in {@link storageArea}.
+ *
+ * Nonexistant keys *and keys with an invalid value* are set to null
+ *
+ * @returns a {@link Promise}, which resolves to a boolean indicating if the rule is on on success
+ * and rejects on failure
+ * (i.e. not a boolean)
+ * 
+ * @internalRemarks
+ * Uses the keys of "All Off" preset to search
+ */
+export async function getAllCustomRuleStatuses(): Promise<Record<string, boolean | null>> {
+	return await getCustomRuleStatusMultiple(Object.keys(presets["All Off"]));
 }
 
 /**
@@ -100,10 +120,10 @@ export async function getRuleStatusMultiple(optionNames: Array<string>): Promise
  */
 export async function getCurrentPreset(): Promise<string | null> {
 	const value = await storageArea.get("currentPreset");
-	if (value === null) {
+	if (!value["currentPreset"]) {
 		return null;
 	}
-	return value;
+	return value["currentPreset"];
 }
 /**
  * Updates the current preset in {@link storageArea}

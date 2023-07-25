@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getSubstringBetween, conformsToHTMLTags, DEFAULT_ALLOWED_TAGS } from "./stringParser";
+import { getSubstringBetween, conformsToHTMLTags, DEFAULT_ALLOWED_TAGS, stringBeginsWith, changeExtension } from "./stringParser";
 
 describe("getSubstringBetween", () => {
     it("should return 'cool' when given 'this is {something{cool}}, right?', 'thing{', '}'", () => {
@@ -75,4 +75,61 @@ describe("HTML tag validator", () => {
             expect(isValid).toBe(expected);
         });
     }
+});
+
+describe("stringBeginsWith", () => {
+    it("should return true when the string begins with", () => {
+        expect(stringBeginsWith("this is a string", "t")).toBe(true);
+        expect(stringBeginsWith("this is a string", "th")).toBe(true);
+        expect(stringBeginsWith("this is a string", "thi")).toBe(true);
+        expect(stringBeginsWith("this is a string", "this")).toBe(true);
+        expect(stringBeginsWith("this is a string", "this ")).toBe(true);
+        expect(stringBeginsWith("this is a string", "this is")).toBe(true);
+        expect(stringBeginsWith("this is a string", "this is a")).toBe(true);
+        it("should work when the string to match is the length of the string to test", () => {
+            expect(stringBeginsWith("this is a string", "this is a string")).toBe(true);
+        });
+        /*
+        // true but out of spec
+        it("should work with an empty string to test (since everything starts with nothing)", () => {
+            expect(stringBeginsWith("this is a string", "")).toBe(true);
+        });
+        */
+    });
+    it("should return false when the string does not begins with", () => {
+        expect(stringBeginsWith("this is a string", "h")).toBe(false);
+        expect(stringBeginsWith("this is a string", "i")).toBe(false);
+        expect(stringBeginsWith("this is a string", "s")).toBe(false);
+        expect(stringBeginsWith("this is a string", " ")).toBe(false);
+        expect(stringBeginsWith("this is a string", "a")).toBe(false);
+        expect(stringBeginsWith("this is a string", ".")).toBe(false);
+        expect(stringBeginsWith("this is a string", "hifdsjfkds")).toBe(false);
+        expect(stringBeginsWith("this is a string", "this is q")).toBe(false);
+        expect(stringBeginsWith("this is a string", "this isn't")).toBe(false);
+        expect(stringBeginsWith("this is a string", "2this is a")).toBe(false);
+        it("should not error when the string to match is longer than the length of the string to test", () => {
+            expect(stringBeginsWith("this is a string", "this is a string2")).toBe(false);
+            expect(stringBeginsWith("this is a string", "this is not a string")).toBe(false);
+        });
+    });
+});
+
+describe("changeExtension", () => {
+    it("changes the extension when it exists", () => {
+        expect(changeExtension("path/to/file.txt", "ts")).toBe("path/to/file.ts");
+        expect(changeExtension("path/to/file.txt", "js")).toBe("path/to/file.js");
+        expect(changeExtension("path/to/file.txt", "jsx")).toBe("path/to/file.jsx");
+        expect(changeExtension("another/path/to/file.js", "ts")).toBe("another/path/to/file.ts");
+        expect(changeExtension("plainFile.txt", "q")).toBe("plainFile.q");
+    });
+    it("adds an extension when there is no extension", () => {
+        expect(changeExtension("path/to/file", "json")).toBe("path/to/file.json");
+        expect(changeExtension("path/to/file", "js")).toBe("path/to/file.js");
+        expect(changeExtension("another/path/to/file", "html")).toBe("another/path/to/file.html");
+    });
+    it("removes the extension when newExtension is empty", () => {
+        expect(changeExtension("path/to/file.txt", "")).toBe("path/to/file");
+        expect(changeExtension("no/one/likes/.DS_STORE", "")).toBe("no/one/likes/"); // tricky
+        expect(changeExtension("path/to/file", "")).toBe("path/to/file");
+    });
 });

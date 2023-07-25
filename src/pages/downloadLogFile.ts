@@ -8,9 +8,9 @@ export function downloadLogFileButton() {
     const downloadButton = document.createElement("button");
     downloadButton.textContent = "Generate log file";
     downloadButton.classList.add("download-logs");
-    downloadButton.addEventListener("click", () => {
+    downloadButton.addEventListener("click", async () => {
         const tmpButton = document.createElement("a");
-        tmpButton.setAttribute("href", generateLogFileURI());
+        tmpButton.setAttribute("href", await generateLogFileURI());
         tmpButton.setAttribute("download", `tkast_log_${new Date().toISOString()}.txt`);
         tmpButton.click();
         /*tmpButton.style.display = "none";

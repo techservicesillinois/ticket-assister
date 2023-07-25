@@ -2,7 +2,11 @@
 
 ## Next up
 
-- refactor some of rules/* to utils/*
+- make rules/rules.test.ts
+	- checks contentScripts/* iff rules[*].scriptPath
+	- ensures that each file starts with like `// <rule name="Cerebro flagger/Alert/Red">`
+		- and has the correct name for its file
+- work on null checks in `optionsInteractions.ts`
 
 - finish options page
 	- show descriptions
@@ -20,11 +24,9 @@
 
 ## General
 
-- try out MS Power BI for log dumping
 - add logging for debugging in production
-- add "@src/*", "@utils/*", and "@config" import paths
+- add `@src/*`, `@utils/*`, `@config`, `@rules/*` import paths
     - fix src/rules/* not allowing absolute imports
-- try to replace `const browser = require("webextension-polyfill");` with `import * as browser from "webextension-polyfill";`
 - maybe add logging of error before `rej()`ing with generic error
     - > throw custom error with message
 - remove `pages/` prefix on manifest.json
@@ -32,6 +34,7 @@
 
 - finish spec as defined in doc
 - Prepare for production
+    - Clean up manifest.json to only contain necessary permissions
     - Set up minifiers
         - For JS
         - Get vite to stop spitting out additional .mjs files

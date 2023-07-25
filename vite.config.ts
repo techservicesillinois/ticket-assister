@@ -1,17 +1,16 @@
 import { defineConfig } from "vite";
 
-import * as path from "path";
+import path from "path";
 
 const rootDir = path.resolve(__dirname, "src");
 const pagesDir = path.resolve(rootDir, "pages");
-const contentScriptsDir = path.resolve(rootDir, "contentScripts");
 const assetsDir = path.resolve(__dirname, "src/static");
 const outDir = path.resolve(__dirname, "build");
 
 export default defineConfig({
     resolve: {
         alias: {
-            //"src": rootDir,
+            //"@src": rootDir,
             //"@assets": assetsDir,
             "utils": path.resolve(rootDir, "utils"),
             "config": path.resolve(rootDir, "config"),
@@ -24,37 +23,23 @@ export default defineConfig({
         outDir,
         emptyOutDir: true,
         copyPublicDir: true,
-        sourcemap: process.env.NODE_ENV === "dev",
-        minify: "esbuild",
-        lib: {
-            entry: [
-                // pages
-                pagesDir + "/index.html",
-                pagesDir + "/options.html",
-                // page deps
-                pagesDir + "/indexInteractions.ts",
-                pagesDir + "/optionsInteractions.ts",
-                // content scripts
-                rootDir + "/utils/rules/contentScriptUpdater.ts",
-                //contentScriptsDir + "",
-            ],
-            name: "Ticket Assister",
-            //fileName: format => `tkast.${format}.js`, // todo
-        },
-        /*rollupOptions: {
+        sourcemap: process.env.NODE_ENV === "development",
+        minify: process.env.NODE_ENV === "development" ? false : "esbuild",
+        rollupOptions: {
             input: {
                 // pages
-                popup: "src/index.html",
+                index: path.join(pagesDir, "/index.html"),
+                options: path.join(pagesDir, "/options.html"),
+                // service worker
+                serviceWorker: path.join(rootDir, "/rules/contentScriptUpdater.ts"),
                 // content scripts
-                main: "src/disher.ts",
+                // built in buildContentScripts.ts in iife
             },
             output: {
-                // allow multiple outputs
-                inlineDynamicImports: true,
-                entryFileNames: "entry/[name].js",
-                chunkFileNames: "chunk/[name].[ext]",
-                assetFileNames: "asset/[name].[ext]",
+                entryFileNames: "scripts/[name].js",
+                chunkFileNames: "scripts/[name]-[hash].js",
+                format: "es", // uses `import`
             },
-        },*/
+        },
     },
 });

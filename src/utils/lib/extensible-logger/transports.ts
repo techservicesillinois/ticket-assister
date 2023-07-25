@@ -1,6 +1,6 @@
-import { LogLevel } from "./loggers";
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const browser = require("webextension-polyfill");
+import { log } from "utils/logger";
+import { LogLevel, readableLogLevel } from "./loggers";
+import * as browser from "webextension-polyfill";
 
 /**
  * A method of delivering data to the user
@@ -26,7 +26,7 @@ export interface Transport {
  */
 export class TransportConsole implements Transport {
     handleMessage(a: string, b: LogLevel): void {
-        console.log(`[${b}] ${a}`);
+        console.log(`[${readableLogLevel(b)}] ${a}`);
     }
     validationError() {
         // console always works
@@ -51,15 +51,41 @@ export class TransportStorage implements Transport {
     #STORAGE_LINES = 100;
     #STORAGE_NAME = "logs";
     #STORAGE_AREA = browser.storage.local;
-    handleMessage(a: string, b: LogLevel): void {
+    /**
+     * Gets the data stored in the log file
+     * 
+     * @throws an {@link Error} 
+     */
+    async #getData(): Promise<Array<string>> {
+        const rawData = await this.#STORAGE_AREA.get(this.#STORAGE_NAME);
+        const parsedData = JSON.parse(rawData[this.#STORAGE_NAME]);
+        if (parsedData instanceof Array) { //Array<string>
+            return parsedData;
+        }
+        throw new Error("Invalid data stored");
+    }
+    async handleMessage(a: string, b: LogLevel): Promise<void> {
         // array of lines of logs
-        const logData: Array<string> = this.#STORAGE_AREA.get(this.#STORAGE_NAME);
+        /*let logData: Array<string>;
+        try {
+            logData = await this.#getData();
+        } catch {
+            logData = new Array<string>();
+        }*/
+        const logData: Array<string> = await (async () => {
+            try {
+                return await this.#getData();
+            } catch {
+                //log.w(`Failed to get log data properly... Overwriting log.`); // I hope that this isn't recursive...
+                return new Array<string>();
+            }
+        })();
         const formattedDate = new Date().toLocaleDateString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, day: "2-digit", month: "2-digit", year: "2-digit" });
-        logData.push(`${formattedDate} [${b}] ${a}`);
+        logData.push(`${formattedDate} [${readableLogLevel(b)}]\t${a}`);
         if (logData.length > this.#STORAGE_LINES) {
             logData.shift();
         }
-        this.#STORAGE_AREA.set(this.#STORAGE_NAME, logData);
+        this.#STORAGE_AREA.set({ [this.#STORAGE_NAME]: logData });
     }
     validationError() {
         if (browser.storage.local === undefined) {
@@ -75,8 +101,14 @@ export class TransportStorage implements Transport {
      * @throws if there is an error parsing the log data
      * @todo
      */
-    generateLogFileURI() {
-        const logData: Array<string> = JSON.parse(this.#STORAGE_AREA.get(this.#STORAGE_NAME));
+    async generateLogFileURI() {
+        const logData: Array<string> = await (async () => {
+            try {
+                return await this.#getData();
+            } catch (e) {
+                return new Array<string>(`Failed to get log data: ${e}`);
+            }
+        })();
         const stringRepresentation = logData.reduce((prev, curr) => prev += `${curr}\n`, "");
         return `data:text/plain;charset=utf-8,${encodeURIComponent(stringRepresentation)}`;
     }

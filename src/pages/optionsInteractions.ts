@@ -1,9 +1,9 @@
 // todo
 // see https://developer.chrome.com/docs/extensions/reference/storage/
-import presets from "rules/presets";
-import { storageArea, updateRuleStatus, updateRuleStatusMultiple, getRuleStatus, getRuleStatusMultiple } from "utils/rules/storage";
+import presets from "../rules/presets";
+import { storageArea, updateCustomRuleStatus, updateCustomRuleStatusMultiple, getCustomRuleStatus, getCustomRuleStatusMultiple } from "utils/rules/storage";
 import { log } from "utils/logger";
-import rules from "rules/rules";
+import rules from "../rules/rules";
 
 
 // Presets
@@ -74,7 +74,7 @@ presetsEl.addEventListener("input", async evt => {
 	}
 	// update preset values in storage
 	setNotice("Updating...", 1000);
-	await updateRuleStatusMultiple(optionsToLoad);
+	await updateCustomRuleStatusMultiple(optionsToLoad);
 	// update preset values on page
 	Object.entries(optionsToLoad).forEach(([ruleName, isOn]) => {
 		optionEls.get(ruleName).checked = isOn;
@@ -94,7 +94,8 @@ const optionHeadingEls = new Map<string, HTMLElement>();
 /**
  * Creates a checkbox option
  */
-function createCheckboxOption(addToEl: HTMLElement, options: { label: string, initialValue?: boolean, details?: string, callback?: (isChecked: boolean) => void }) {
+function createCheckboxOption(addToEl: HTMLElement, options: { label: string, initialValue?: boolean, details?: string, url?: string, callback?: (isChecked: boolean) => void }) {
+	const wrapperEl = document.createElement("div");
 	const labelEl = document.createElement("label");
 	const inputEl = document.createElement("input");
 	inputEl.type = "checkbox";
@@ -112,9 +113,25 @@ function createCheckboxOption(addToEl: HTMLElement, options: { label: string, in
 	const textEl = document.createTextNode(options.label);
 	labelEl.appendChild(inputEl);
 	labelEl.appendChild(textEl);
+
+	wrapperEl.appendChild(labelEl);
+	if (details !== undefined) {
+		const detailsEl = document.createElement("p");
+		detailsEl.textContent = details;
+		detailsEl.classList.add("details");
+		wrapperEl.appendChild(detailsEl);
+	}
+	if (url !== undefined) {
+		const runsOnEl = document.createElement("p");
+		runsOnEl.textContent = `Runs on ${url}`;
+		runsOnEl.classList.add("runs-on");
+		wrapperEl.appendChild(runsOnEl);
+	}
+
+	wrapperEl.classList.add("option-wrapper");
 	// not null because it would have thrown
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-	addToEl.appendChild(labelEl);
+	addToEl.appendChild(wrapperEl);
 	optionEls.set(options.label, inputEl);
 }
 function createOptionTree(options: Array<string, boolean>) {
@@ -137,12 +154,13 @@ function createOptionTree(options: Array<string, boolean>) {
 		const ruleName = segments[segments.length - 1];
 		// find details from rule and pass to createCheckboxOption
 		const associatedRule = rules.find(rule => rule.name === fullRuleName);
-		createCheckboxOption(lastLevelEl, { label: ruleName, details: associatedRule.details, initialValue: value, callback: newValue => {
+		// todo next null checks
+		createCheckboxOption(lastLevelEl, { label: ruleName, details: associatedRule.details, url: associatedRule.path, initialValue: value, callback: newValue => {
 			// update in storage
-			updateRuleStatus(fullRuleName, newValue);
+			updateCustomRuleStatus(fullRuleName, newValue);
 			// bubble errors
 			
-			// todo auto set to "Custom" preset on change options
+			// todo auto set to CUSTOM_PRESET preset on change options
 			// and save the Custom preset to storage
 		}});
 	});
@@ -156,7 +174,7 @@ createOptionTree(Object.entries(presets["All Off"]));
 async function loadAllSavedOptions() {
 	throw new Error("Not implemented");
 	// Object.keys(presets["All Off"]) should always exist and have everything listed
-	const rules = await getRuleStatusMultiple(Object.keys(presets["All Off"]));
+	const rules = await getAllRuleStatuses();
 	for (const [key, value] of Object.entries(rules)) {
 		const associatedOptionEl = optionEls.get(key);
 		if (associatedOptionEl === null) {

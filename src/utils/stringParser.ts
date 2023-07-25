@@ -23,3 +23,29 @@ export function conformsToHTMLTags(input: string, allowedTags: Array<string>) {
     }
     return true;
 }
+
+/**
+ * Checks if the string {@param str} begins with the string {@param beginning}
+ * @param str the string to check
+ * @param beginning the expected beginning of the string to test for
+ */
+export function stringBeginsWith(str: string, beginning: string): boolean {
+    return str.substring(0, beginning.length) === beginning;
+}
+
+/**
+ * Changes the extension of the file in {@param path} to {@param newExtension}
+ * @returns this new string
+ * 
+ * @remarks
+ * If there is no extension in the {@param path}, will still add {@param newExtension}.
+ * If the {@param newExtension} is empty, it will remove the extension from the {@param path}.
+ */
+export function changeExtension(path: string, newExtension: string): string {
+    const pathWithoutExtension = path.replace(/\.[^.]*$/, '');
+    if (newExtension === "") {
+        // no trialing dot.
+        return `${pathWithoutExtension}`;
+    }
+    return `${pathWithoutExtension}.${newExtension}`;
+}

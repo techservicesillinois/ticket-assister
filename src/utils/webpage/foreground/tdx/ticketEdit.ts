@@ -1,5 +1,5 @@
 import { DomParseError } from "utils/errors";
-import { TDXPerson } from "utils/tdx/types/person";
+import type { TDXPerson } from "utils/tdx/types/person";
 import type { TicketID } from "utils/tdx/types/ticket";
 import { TICKETS_BASE_URL } from "./shared";
 /**

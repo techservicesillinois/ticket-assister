@@ -14,13 +14,32 @@
         "default_icon": "img/icon-light-128.png"
     },
     "background": {
-        "service_worker": "contentScriptUpdater.js"
+        "service_worker": "scripts/serviceWorker.js",
+        "type": "module"
     },
     "content_scripts": [
     ],
     "permissions": [
         "storage",
         "tabs",
-        "webNavigation"
+        "webNavigation",
+        "scripting",
+        "activeTab"
+    ],
+    "host_permissions": [
+        "https://help.uillinois.edu/TDNext/*",
+        "https://cerebro.techservices.illinois.edu/"
+    ],
+    "optional_host_permissions": [
+        "https://*/*"
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": ["img/icon.svg"],
+            "matches": [
+                "https://help.uillinois.edu/*",
+                "https://cerebro.techservices.illinois.edu/*"
+            ]
+        }
     ]
 }

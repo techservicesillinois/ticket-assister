@@ -1,8 +1,8 @@
 import { getCurrentTicketNumber } from "../parser/ticket";
 import { verifyFetchSuccess, getDomFromText, FetchErrorMessage } from "utils/fetch";
 import { log } from "utils/logger";
-import { ITDXPersonBasic, ITDXPerson } from "utils/tdx/types/person";
-import { TicketID, LimitedHTML, IAssignCommentOptions, ICommentOptions } from "utils/tdx/types/ticket";
+import type { ITDXPersonBasic, ITDXPerson } from "utils/tdx/types/person";
+import type { TicketID, LimitedHTML, IAssignCommentOptions, ICommentOptions } from "utils/tdx/types/ticket";
 import { CreateMethod, SRA, Status, boolToCheckboxValue, getAttributeFor } from "utils/tdx/formNames";
 import { BASE_URL } from "config";
 import { DEFAULT_ALLOWED_TAGS, conformsToHTMLTags, getSubstringBetween } from "utils/stringParser";
@@ -373,7 +373,7 @@ function updateBg(ticketID: TicketID, params: { status?: Status, message: Limite
  */
 function editBg(ticketID: TicketID, params: { requestor?: ITDXPerson, status?: Status, createdVia?: CreateMethod, requestArea?: SRA, responsible?: ITDXPerson, title?: string, description?: LimitedHTML }): Promise<void> {
     return new Promise((res, rej) => {
-        //todo here return rej("Not fully implemented");
+        // return rej("Not fully implemented");
         fetch(BASE_URL + "/TDNext/Apps/40/Tickets/Edit?TicketID=" + ticketID)
             .then(verifyFetchSuccess)
             .then(getDomFromText)

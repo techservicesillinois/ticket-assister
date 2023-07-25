@@ -1,12 +1,13 @@
 {
-  "name": "Ticket Assister",
-  "version": "1.0.0",
+  "name": "tkast",
+  "version": "0.0.1",
   "description": "Helps you work on TeamDynamix tickets more efficiently.",
   "main": "index.ts",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:full": "npm run build && cp src/manifest.json dist/",
+    "build:full": "vite build && node buildContentScripts.mjs",
+    "build:dev": "NODE_ENV=development vite build && node buildContentScripts.mjs",
     "clean": "rm -rf ./build",
     "test": "vitest",
     "coverage": "vitest run --coverage"

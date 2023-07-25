@@ -1,7 +1,8 @@
 import { BASE_URL } from "config";
 import { DomParseError } from "utils/errors";
 import { log } from "utils/logger";
-import { ITDXPerson, netIDFromEmail } from "utils/tdx/types/person";
+import type { ITDXPerson } from "utils/tdx/types/person";
+import { netIDFromEmail } from "utils/tdx/types/person";
 import type { AtLeast } from "utils/types";
 
 /**
@@ -46,7 +47,7 @@ export function getWysiwygDocument() {
  * Works on multiple pages, including ticketCreate and ticketView (for comments)
  *
  * @internalRemarks
- * Does not return a HTMLBodyElement because https://stackoverflow.com/a/35297274
+ * Does not return a HTMLBodyElement because https://stackoverflow.com/a/35297274/8804293
  */
 export function getWysiwygBody(): HTMLElement {
 	return getWysiwygDocument().body;

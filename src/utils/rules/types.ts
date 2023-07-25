@@ -29,9 +29,18 @@ export interface ToggleableFeature {
      */
     path: string,
     /**
-     * The callback which is ran in the foreground
+	 * The path to the content script file
+	 * Relative from `contentScripts/`
+	 *
+	 * Should include the file extension.
+	 *
+	 * To be ran in the foreground
      * whenever `path` is navigated to
      * and the feature is enabled
+	 *
+	 * @remarks
+	 * The associated script should have the first line like
+	 * // <rule name="rule.name">
      */
-    action: () => void,
+    scriptPath: string,
 }

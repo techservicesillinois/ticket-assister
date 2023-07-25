@@ -13,6 +13,26 @@ export enum LogLevel {
     Error = 3,
     Critical = 4, // app-crashing type error
 }
+/**
+ * Returns a string representation of a {@link LogLevel}
+ * 
+ * Will be lowercase.
+ */
+export function readableLogLevel(logLevel: LogLevel): string {
+    switch (logLevel) {
+        case LogLevel.Debug:
+            return "debug";
+        case LogLevel.Info:
+            return "info";
+        case LogLevel.Warning:
+            return "warning";
+        case LogLevel.Error:
+            return "error";
+        case LogLevel.Critical:
+            return "critical";
+    }
+}
+
 // todo maybe pass current URL as well
 // todo pass file (and function if possible) as well
 export class Logger {

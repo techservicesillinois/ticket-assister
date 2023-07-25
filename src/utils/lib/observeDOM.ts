@@ -6,7 +6,7 @@
  * @param callback the callback to be ran on DOM change
  *
  * @remarks
- * Adapted from https://stackoverflow.com/a/14570614
+ * Adapted from https://stackoverflow.com/a/14570614/8804293
  */
 export const watchDOMChanges = (function(){
 	const MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
