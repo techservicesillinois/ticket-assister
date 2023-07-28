@@ -1,4 +1,4 @@
-// <rule name="">
+// <rule name="TDX/Ticket/Update/Prefill response">
 import * as ticketUpdate from "utils/webpage/foreground/tdx/ticketUpdate";
 
 (() => {

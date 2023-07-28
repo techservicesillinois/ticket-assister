@@ -7,7 +7,7 @@ import * as browser from "webextension-polyfill";
 export function addTkAstLogoToPage() {
 	const logo = document.createElement("img");
     logo.src = browser.runtime.getURL("img/icon.svg");
-    logo.style.width = "100px";
+    logo.style.width = "80px";
     logo.style.position = "fixed";
     logo.style.right = "25px";
     logo.style.bottom = "25px";

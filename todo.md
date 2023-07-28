@@ -2,12 +2,6 @@
 
 ## Next up
 
-- make rules/rules.test.ts
-	- checks contentScripts/* iff rules[*].scriptPath
-	- ensures that each file starts with like `// <rule name="Cerebro flagger/Alert/Red">`
-		- and has the correct name for its file
-- work on null checks in `optionsInteractions.ts`
-
 - finish options page
 	- show descriptions
 	- tree out
@@ -18,9 +12,9 @@
 	- auto select Phone as source
 	- modify tabindex
 	- hide additional contacts (click to expand)
+- cerebro connection
 - cache getUser in chrome.storage (refresh weekly)
 
-- cerebro connection
 
 ## General
 

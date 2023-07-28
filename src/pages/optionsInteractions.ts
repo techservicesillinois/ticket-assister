@@ -25,6 +25,9 @@ let noticeFadeTimeoutInner = null;
  * else staying put.
  *
  * Will be changed with the next call to setNotice.
+ *
+ * @todo improve animation
+ * slide down old message and slide up new if overriding
  */
 function setNotice(message: string, fadeAfterMs?: number) {
 	log.i(`Setting notice to "${message}".`);

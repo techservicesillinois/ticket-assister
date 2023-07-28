@@ -15,10 +15,9 @@ import * as fs from "fs";
 const __dirname = "/mnt/c/users/elijah/documents/programming/_projects/tkast/";
 
 const rootDir = path.resolve(__dirname, "src");
-const assetsDir = path.resolve(__dirname, "src/static");
+const contentScriptsSrcDir = path.join(rootDir, "contentScripts");
 const outDir = path.resolve(__dirname, "build");
-const contentScriptsDir = path.join(rootDir, "contentScripts");
-const contentScriptsOutDir = path.join(outDir, "scripts", "contentScripts");
+const contentScriptsOutDir = path.join(outDir, "scripts"); // contentScripts subdirectory added as compiles
 
 /**
  * Returns all of the content scripts in the `contentScripts/*` directory
@@ -43,7 +42,7 @@ function getContentScripts() {
         });
     }
 
-    walk(contentScriptsDir);
+    walk(contentScriptsSrcDir);
 
     return entries;
 }
@@ -62,7 +61,7 @@ for (const [entryName, filePath] of Object.entries(getContentScripts())) {
                 "config": path.resolve(rootDir, "config"),
             },
         },
-        root: contentScriptsDir, //rootDir
+        root: contentScriptsSrcDir, //rootDir
         //publicDir: assetsDir,
         build: {
             /*lib: {
