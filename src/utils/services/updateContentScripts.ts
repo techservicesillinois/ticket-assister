@@ -1,57 +1,16 @@
 import * as browser from "webextension-polyfill";
 
-import { log } from "../utils/logger";
-import rules, { getRule } from "./rules";
-import presets, { CUSTOM_PRESET, DEFAULT_PRESET } from "./presets";
+import { log } from "utils/logger";
+import { getRule } from "../../rules/rules";
+import presets, { CUSTOM_PRESET, DEFAULT_PRESET } from "../../rules/presets";
 import { customPresetRulePrefix, getAllCustomRuleStatuses, getCurrentPreset } from "utils/rules/storage";
 import type { ToggleableFeature } from "utils/rules/types";
 import { setCurrentPreset } from "utils/rules/storage";
 import { changeExtension, stringBeginsWith } from "utils/stringParser";
+import { BASE_URL } from "config";
 
-/**
- * Utility function to match paths with wildcards
- * @todo Ignores queries, slashes, and hashes.
- * 
- * @param path - The current page path
- * @param featurePath - The path to match
- * @returns true if the path matches the featurePath, false otherwise
- */
-function pathMatches(path: string, featurePath: string): boolean {
-    // Convert * wildcard to .* regex
-    const regexPath = featurePath.replace("*", ".*");
-    // test if the path matches
-    return new RegExp(`^${regexPath}$`).test(path);
-}
-/*(function setUpRules() {
-    // listen for page navigation
-    browser.tabs.onUpdated.addListener((_tabId, changeInfo, tab) => {
-        if (changeInfo.status === "complete" && tab.url !== undefined) {
-            const url = new URL(tab.url);
-            const path = url.pathname;
 
-            // check if the path matches any of the defined rules
-            rules.forEach((rule) => {
-                if (pathMatches(path, rule.feature.path)) {
-                    const ruleName = rule.feature.name;
-                    log.d(`Navigation to path ${path} matched rule ${ruleName}.`);
-                    // todo: verify that this option is enabled from settings
-                    if (true) {
-                        log.d(`Action ${ruleName} is enabled. Proceeding...`);
-                        // run the action callback
-                        try {
-                            //rule.action();
-                            browser.runtime.sendMessage({ type: "executeRule", rule: rule });
-                            log.d(`Action ${ruleName} ran`);
-                        } catch (e) {
-                            log.e(`Action ${ruleName} had an error: ${e}`);
-                        }
-                    }
-                }
-            });
-        }
-    });
-    log.i(`Page listener SW initialized.`);
-})();*/
+export default function () {
 
 /*browser.runtime.onUpdateAvailable(() => {
     // apply update
@@ -59,26 +18,15 @@ function pathMatches(path: string, featurePath: string): boolean {
 });*/ // wait for browser restart
 
 
-/**
- * A {@link Map} of the {@link RegisteredContentScript}s
- * from the rule names ({@link string})
- *
- * Used to disable rules later by the rule name.
- * 
- * @internalRemarks
- * Could check `browser.scripting.getRegisteredContentScripts()`,
- * but that would not contain our rule names as keys and would be hard to transform
- */
-const contentScriptRegistrationRecords = new Map();//<string, RegisteredContentScript>
-
 //self.addEventListener("install", () => {
-browser.runtime.onInstalled.addListener(async (_id, _previousVersion, _reason, _temporary) => {
+browser.runtime.onInstalled.addListener(async () => { // async (id, previousVersion, reason, temporary)
 	// (id: string?, previousVersion: string?, reason: runtime.OnInstalledReason, temporary: boolean)
 	log.i("Service worker installed.");
+	log.d(`We are working with BASE_URL ${BASE_URL}`);
 	
 	// we would deregister all content scripts here
 	// but there shouldn't be any since this is a fresh install
-	// and we wouldn't be able to find them in contentScriptRegistrationRecords anyways
+	//if (browser.scripting.getRegisteredContentScripts().length > 0) await browser.scripting.unregisterContentScripts();
 	
 	const presetName = await getCurrentPreset();
 	log.d(`The current preset is ${presetName}.`);
@@ -104,21 +52,23 @@ browser.runtime.onInstalled.addListener(async (_id, _previousVersion, _reason, _
 // https://developer.chrome.com/docs/extensions/mv3/content_scripts/
 browser.storage.onChanged.addListener(async (changes, areaName) => {
 	if (areaName === "sync") { // && changes.options?.newValue
-		log.d(`The storageArea was updated.`);
+		log.d(`The sync storageArea was updated.`);
 		for (const [key, { oldValue, newValue }] of Object.entries(changes)) {
 			log.d(`Processing change: ${key}: ${oldValue} -> ${newValue}`);
 			if (oldValue !== newValue) {
-				log.d(`Diff detected.`);
+				log.d(`storageArea: diff detected`);
 				// add & remove content scripts
 				// todo send message to optionsInteractions.js and display that to the user (i.e. rollback if not successful)
 				if (key === "currentPreset") {
-					log.d(`Current preset was changed.`);
+					log.d(`> Current preset was changed.`);
 					// todo verify oldValue and newValue types before passing
 					handlePresetChange(oldValue, newValue);
 				} else if (stringBeginsWith(key, customPresetRulePrefix)) {
-					log.d(`Custom preset rule was changed.`);
+					log.d(`> Custom preset rule was changed.`);
 					// todo verify oldValue and newValue types before passing
-					handleRuleChange(key, oldValue, newValue);
+					handleRuleChange(key.substring(customPresetRulePrefix.length), newValue);
+				} else {
+					log.d(`> Unknown key was changed (no-op): ${key}`);
 				}
 			}
 		}
@@ -170,16 +120,14 @@ async function handlePresetChange(oldPresetName: string, newPresetName: string) 
  * Rules taken as specified in {@link presets}.
  * 
  * Logs out any errors and successes to {@link log}.
+ * 
+ * Assumes that oldRuleValue !== newRuleValue
+ * because that would be inefficient
  */
-async function handleRuleChange(ruleName: string, oldRuleValue: boolean, newRuleValue: boolean) {
-	if (oldRuleValue === newRuleValue) {
-		// no changes here
-		return;
-	}
+async function handleRuleChange(ruleName: string, newRuleValue: boolean) {
 	const currentPreset = await getCurrentPreset();
 	if (currentPreset === CUSTOM_PRESET) {
 		if (newRuleValue) {
-			// => !oldRuleValue
 			// register this specific rule
 			try {
 				await registerContentScriptByRuleName(ruleName);
@@ -195,7 +143,10 @@ async function handleRuleChange(ruleName: string, oldRuleValue: boolean, newRule
 				log.e(`Failed to deregister content script for rule "${ruleName}": ${e}`);
 			}
 		}
-	} // else do nothing. don't need to change.
+	} else {
+		// do nothing. don't need to change.
+		log.d(`Not changing content script registry as the current preset is not the custom preset.`);
+	}
 }
 
 
@@ -306,7 +257,7 @@ async function deactivateNormalPresetRules(presetName: string) {
 		// maybe should do this by default when changing presets
 		await deregisterAllRuleContentScripts();
 	} else {
-		log.i(`Activating preset "${presetName}" rules...`);
+		log.i(`Deactivating preset "${presetName}" rules...`);
 		await deregisterContentScripts(presetRules);
 	}
 }
@@ -330,7 +281,7 @@ async function deregisterContentScripts(rules: Record<string, boolean | null>): 
 			// .map over .forEach to be async (https://stackoverflow.com/a/37576787/8804293)
 			.map(async ([ruleName, isActive]) => {
 				// if was set to be active
-				if (!isActive) {
+				if (isActive) {
 					// there is something to deregister
 					try {
 						await deregisterContentScriptByRuleName(ruleName);
@@ -358,28 +309,28 @@ async function registerContentScriptByRuleName(ruleName: string) {
 /**
  * Registers the content script for a rule
  * according to its rules properties
- *
- * Automatically registers the content script in {@link contentScriptRegistrationRecords}
  */
 async function registerContentScript(rule: ToggleableFeature) { //: Promise<RegisteredContentScript>
-	try {
-		const registration = await browser.scripting.registerContentScripts([{
-			id: getRuleContentScriptId(rule.name),
+	//try {
+		const getContentScriptRegistration = (matchesUrl: string, scriptPath: string) => ({
+			id: getRuleContentScriptId(rule.name, scriptPath),
 			//allFrames: true,
 			//css: { file: "/path", code: "body{color:blue;}"},
-			matches: [rule.path],
-			js: [`scripts/contentScripts/${changeExtension(rule.scriptPath, "js")}`],
-			runAt: "document_end",
+			matches: [matchesUrl],
+			js: [`scripts/contentScripts/${changeExtension(scriptPath, "js")}`],
+			runAt: <browser.ExtensionTypes.RunAt>"document_end",
 			//world: "MAIN",
-		}]);
-		// registration.unregister()
-		contentScriptRegistrationRecords.set(rule.name, registration);
-		//log.i(`Successfully registered content script "${rule.name}".`);
-		return registration;
-	} catch (e) {
+		});
+		const contentScriptRegistrations = [];
+		for (const contentScript of rule.contentScripts) {
+			contentScriptRegistrations.push(getContentScriptRegistration(contentScript.url, contentScript.script));
+		}
+		await browser.scripting.registerContentScripts(contentScriptRegistrations);
+		log.i(`Registered ${contentScriptRegistrations.length} content script${contentScriptRegistrations.length === 1 ? "" : "s"} for rule ${rule.name}`);
+	//} catch (e) {
 		//log.crit(`Failed to register content script "${rule.name}": ${e}`);
-		throw new Error(e.toString());
-	}
+		//throw; // throw it
+	//}
 }
 /**
  * Returns the predicted ID of the content script
@@ -389,20 +340,10 @@ async function registerContentScript(rule: ToggleableFeature) { //: Promise<Regi
  * For consistent naming in registration/deregistration.
  * Registerd rule names are not guarenteed.
  */
-function getRuleContentScriptId(ruleName: string) {
-	return `rule-${ruleName}`;
+function getRuleContentScriptId(ruleName: string, contentScriptPath: string) {
+	return `rule-${ruleName}-${contentScriptPath}`;
 }
 
-/**
- * Deregisters (deactivates) a content script
- *
- * @remarks
- * Typically used to remove a rule content script, but requires an {@param ruleId}
- * instead of a rule name.
- */
-async function deregisterContentScript(ruleId: string): Promise<void> {
-	return await browser.scripting.unregisterContentScripts({ ids: [ruleId] });
-}
 /**
  * Deregisters (deactivates) a content scripts
  * based on its {@param ruleName}
@@ -410,26 +351,27 @@ async function deregisterContentScript(ruleId: string): Promise<void> {
  * @throws an {@link Error} if not found
  */
 async function deregisterContentScriptByRuleName(ruleName: string): Promise<void> {
-	const registration = contentScriptRegistrationRecords.get(ruleName);
-	if (registration === null) {
-		// try deregistering with getRuleContentScriptId?
-		throw new Error("Content Script registration not found.");
+	const rule = getRule(ruleName);
+	if (rule === null) {
+		throw new Error("Rule not found");
 	}
-	return await registration.unregister();
+	const ids: Array<string> = [];
+	for (const contentScript of rule.contentScripts) {
+		ids.push(getRuleContentScriptId(rule.name, contentScript.script));
+	}
+	await browser.scripting.unregisterContentScripts({ ids });
+	log.i(`Unregistered ${ids.length} content script${ids.length === 1 ? "" : "s"} for rule ${rule.name}`);
 }
 /**
  * Deregisters (deactivates) all recorded content scripts
  * for rules
  * 
  * @remarks
- * Based on the record of {@link contentScriptRegistrationRecords}.
+ * Includes all dynamically registered content scripts,
+ * which may include more than just rules.
  */
 async function deregisterAllRuleContentScripts() {
-	await Promise.all(
-		Object.entries(contentScriptRegistrationRecords).map(async registration => {
-			await registration.unregister();
-		})
-	);
+	return await browser.scripting.unregisterContentScripts();
 }
 
 
@@ -451,3 +393,5 @@ browser.webNavigation.onDOMContentLoaded.addListener(details => { // .onComplete
     }
 });
 */
+
+}

@@ -8,7 +8,7 @@ import { ITDXPerson } from "./person";
 export type LimitedHTML = string;
 
 /**
- * A TDX Ticket ID number, as used on /TDNext
+ * A TDX Ticket ID number, as used on {@link} BASE_URL}
  */
 export type TicketID = number;
 // todo maybe class Ticket with data members pulled from GETting the ticket

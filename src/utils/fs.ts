@@ -53,7 +53,6 @@ export async function getAllFilesSync(rootDir: string): Promise<Record<string, s
     async function walk(currDir, baseDir): Promise<void[]> {
         const files = await fsPromises.readdir(currDir, { withFileTypes: true });
         return await Promise.all(files.map(async file => {
-            console.log("file is", file.name);
             const fullPath = path.join(baseDir, file.name);
             const relativePath = path.relative(currDir, fullPath);
             const entryName = changeExtension(relativePath, ""); // remove file extension
@@ -61,14 +60,12 @@ export async function getAllFilesSync(rootDir: string): Promise<Record<string, s
                 await walk(fullPath, baseDir); // Recursive call for subdirectories
             } else {
                 entries[entryName] = fullPath;
-                console.log("added the file!");
             }
         }));
     }
     
 
     await walk(rootDir, rootDir);
-    console.log("done walking! \nwith entres",entries)
 
     return entries;
 }*/

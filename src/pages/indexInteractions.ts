@@ -1,3 +1,4 @@
+import { injectScript } from "utils/windowScript";
 import * as browser from "webextension-polyfill";
 const onScreenErrorsWrapper = document.querySelector("#onscreen-errors-wrapper");
 
@@ -21,6 +22,16 @@ if (feedbackEl === null) {
 	feedbackEl.addEventListener("click", () => {
 		window.open(FEEDBACK_LINK, "_blank");
 	});
+}
+
+// Help
+const helpEl = document.querySelector("#help");
+if (helpEl === null) {
+    onScreenError("Failed to find help button.");
+} else {
+    helpEl.addEventListener("click", () => {
+        window.open(browser.runtime.getURL("pages/trouble.html"));
+    });
 }
 
 // Options
@@ -50,6 +61,7 @@ function getArrow(arrowState: ARROW_STATE): string {
     }
     return "\u25B2";
 }
+// todo injectScript()
 let arrowState = ARROW_STATE.DOWN;
 const macrosEl = document.querySelector("#macros");
 const macrosDropdownEl = document.querySelector("#macros-dropdown");

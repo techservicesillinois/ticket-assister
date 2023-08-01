@@ -30,8 +30,7 @@ export const customPresetRulePrefix = "rule-";
  * beware of runtime.lastError
  */
 export async function updateCustomRuleStatus(name: string, value: boolean): Promise<void> {
-	await storageArea.set({ [`${customPresetRulePrefix}${name}`]: value });
-	return;
+	return await storageArea.set({ [`${customPresetRulePrefix}${name}`]: value });
 }
 /**
  * Updates multiple rules' on/off states saved in storage
@@ -57,15 +56,13 @@ export async function updateCustomRuleStatusMultiple(optionStatuses: Record<stri
  * can use storageArea.get({ key: defaultValue });
  */
 export async function getCustomRuleStatus(optionName: string): Promise<boolean | null> {
-	const value = await storageArea.get(optionName);
-	if (value === null) {
+	const storedName = `${customPresetRulePrefix}${optionName}`;
+	const value = await storageArea.get(storedName);
+	if (value[storedName] === undefined) {
 		return null;
 	}
-	const valueBool = stringToBoolean(value);
-	if (valueBool === null) {
-		throw new Error("Invalid data associated with that value.");
-	}
-	return valueBool;
+	// stored as a boolean
+	return value[storedName];
 }
 /**
  * Gets the values (i.e. on or off) of multiple rules
@@ -80,16 +77,18 @@ export async function getCustomRuleStatus(optionName: string): Promise<boolean |
  * 
  * @internalRemarks
  * This could alternatively return a Promise<**Map**<string, boolean | null>>
+ * 
+ * Adds the {@link customPresetRulePrefix} to each of the {@param optionNames}
  */
 export async function getCustomRuleStatusMultiple(optionNames: Array<string>): Promise<Record<string, boolean | null>> {
-	const values: Record<string, string> = await storageArea.get(optionNames);
+	const storedNames = optionNames.map(optionName => `${customPresetRulePrefix}${optionName}`);
+	const values: Record<string, boolean | null> = await storageArea.get(storedNames);
 	const ret: Record<string, boolean | null> = {};
 	Object.entries(values).map(([key, value]) => {
-		if (value === null) {
-			return null;
-		}
-		const valueBool: boolean | null = stringToBoolean(value);
-		ret[key] = valueBool;
+		// already a boolean
+		// or null
+		const keyWithoutPrefix = key.substring(customPresetRulePrefix.length); // the rule name
+		ret[keyWithoutPrefix] = value;
 	});
 	return ret;
 }
@@ -104,7 +103,8 @@ export async function getCustomRuleStatusMultiple(optionNames: Array<string>): P
  * (i.e. not a boolean)
  * 
  * @internalRemarks
- * Uses the keys of "All Off" preset to search
+ * Uses the keys of "All Off" preset to find all
+ * since all presets should be defined there
  */
 export async function getAllCustomRuleStatuses(): Promise<Record<string, boolean | null>> {
 	return await getCustomRuleStatusMultiple(Object.keys(presets["All Off"]));
@@ -120,7 +120,7 @@ export async function getAllCustomRuleStatuses(): Promise<Record<string, boolean
  */
 export async function getCurrentPreset(): Promise<string | null> {
 	const value = await storageArea.get("currentPreset");
-	if (!value["currentPreset"]) {
+	if (value["currentPreset"] === undefined) {
 		return null;
 	}
 	return value["currentPreset"];

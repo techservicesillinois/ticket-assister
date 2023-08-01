@@ -49,3 +49,16 @@ export function changeExtension(path: string, newExtension: string): string {
     }
     return `${pathWithoutExtension}.${newExtension}`;
 }
+
+/**
+ * Converts an array of strings
+ * into a comma-serparted array
+ *
+ * @remarks
+ * Uses https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/ListFormat
+ */
+export function squishArray(arr: Array<string>): string {
+	//return arr.reduce((acc, curr) => `${acc}, ${curr}`, "").slice(2)
+	const formatter = new Intl.ListFormat("en", { style: "narrow", type: "conjunction" });
+	return formatter.format(arr);
+}

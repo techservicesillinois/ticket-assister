@@ -11,6 +11,7 @@ export function openWindowWithPost(url: string, name: string, data: Record<strin
 		const input = document.createElement("input");
 		input.name = k;
 		input.value = v;
+		input.type = "hidden";
 		form.appendChild(input);
 		if (k === "submit") submitButton = input;
 	}

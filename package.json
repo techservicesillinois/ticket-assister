@@ -4,10 +4,10 @@
   "description": "Helps you work on TeamDynamix tickets more efficiently.",
   "main": "index.ts",
   "scripts": {
-    "build": "vite build",
-    "build:full": "vite build && node buildContentScripts.mjs",
-    "build:dev": "NODE_ENV=development vite build && NODE_ENV=development node buildContentScripts.mjs",
-    "clean": "rm -rf ./build",
+    "build": "vite build && node buildContentScripts.mjs",
+    "build:dev": "NODE_ENV=development vite build -m development && NODE_ENV=development node buildContentScripts.mjs",
+    "dev": "rm -rf tmp/contentScripts && cp -r build/scripts/contentScripts/. tmp/contentScripts && NODE_ENV=development vite build -m development && cp -r tmp/contentScripts build/scripts/contentScripts",
+    "clean": "rm -rf ./build && rm -rf tmp/contentScripts",
     "test": "vitest",
     "coverage": "vitest run --coverage"
   },

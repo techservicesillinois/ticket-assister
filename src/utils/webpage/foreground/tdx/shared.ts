@@ -1,29 +1,58 @@
 import { BASE_URL } from "config";
 import { DomParseError } from "utils/errors";
+import { watchDOMChanges } from "utils/lib/observeDOM";
 import { log } from "utils/logger";
 import type { ITDXPerson } from "utils/tdx/types/person";
 import { netIDFromEmail } from "utils/tdx/types/person";
 import type { AtLeast } from "utils/types";
 
 /**
+ * The amount of time to wait before trying to get the WYSIWYG El again
+ * 
+ * Will wait a total of `TRY_AGAIN_MS` * 3 ms max.
+ */
+const TRY_AGAIN_MS = 400;
+/**
  * Gets the element of the WYSIWYG editor on screen.
  *
  * Works on multiple pages, including ticketCreate and ticketView (for comments)
+ * 
+ * async: waits for iframe to load, if possible
+ * 
+ * @todo abstract with {@link getAttachmentsEl}
  */
-function getWysiwygEl() {
-	const editorEl = document.querySelector<HTMLIFrameElement>("iframe.cke_wysiwyg_frame");
-	if (editorEl === null) {
-		throw new DomParseError();
-	}
-	return editorEl;
+async function getWysiwygEl(): Promise<HTMLIFrameElement> {
+	return new Promise((res, rej) => {
+		let tries = 0;
+		const action = () => {
+			const editorEl = document.querySelector<HTMLIFrameElement>("iframe.cke_wysiwyg_frame");
+			if (editorEl === null) {
+				if (tries++ < 3) {
+					// wait for load?
+					setTimeout(action, TRY_AGAIN_MS);
+				} else {
+					rej(new DomParseError());
+				}
+			} else {
+				res(editorEl);
+			}
+		};
+		if (document.readyState === "complete") {
+			action();
+		} else {
+			// window.onDOMContentLoaded fires when all deferred scripts have executed (document.readyState === "interactive")
+			// window.onload fires after everything, including stylesheets, images, and iframes (document.readyState === "complete")
+			window.addEventListener("load", action, { once: true });
+		}
+	});
 }
 /**
  * Gets the {@link window} of the WYSIWYG editor on screen.
  *
  * Works on multiple pages, including ticketCreate and ticketView (for comments)
  */
-export function getWysiwygWindow() {
-	const editorEl = getWysiwygEl();
+export async function getWysiwygWindow() {
+	const editorEl = await getWysiwygEl();
 	if (editorEl.contentWindow === null) {
 		throw new DomParseError();
 	}
@@ -34,8 +63,8 @@ export function getWysiwygWindow() {
  *
  * Works on multiple pages, including ticketCreate and ticketView (for comments)
  */
-export function getWysiwygDocument() {
-	const editorEl = getWysiwygEl();
+export async function getWysiwygDocument(): Promise<Document> {
+	const editorEl = await getWysiwygEl();
 	if (editorEl.contentDocument === null) {
 		throw new DomParseError();
 	}
@@ -49,8 +78,8 @@ export function getWysiwygDocument() {
  * @internalRemarks
  * Does not return a HTMLBodyElement because https://stackoverflow.com/a/35297274/8804293
  */
-export function getWysiwygBody(): HTMLElement {
-	return getWysiwygDocument().body;
+export async function getWysiwygBody(): Promise<HTMLElement> {
+	return (await getWysiwygDocument()).body;
 }
 
 /**
@@ -59,26 +88,35 @@ export function getWysiwygBody(): HTMLElement {
  *
  * @remarks
  * Will only activate for the first editor on the page. This is assuming that there is only 1 editor.
+ * Runs on DOMContentLoaded; i.e. this should not be called late
+ * 
+ * By default, Ctrl+L linking is enabled in the wYSIWYG editor,
+ * so this is likely not useful.
  */
-export function enableCtrlKLinkingOnWysiwyg() {
+export async function enableCtrlKLinkingOnWysiwyg() {
 	// contentWindow would work as well
-	detectCtrlAndKey("k", getWysiwygDocument().body, () => {
+	detectCtrlAndKey("k", await getWysiwygBody(), () => {
 		const createLinkEl: HTMLElement | null = document.querySelector(".cke_button.cke_button__link");
 		if (createLinkEl === null) {
-			log.e("Failed to add link: couldn't locate link button");
+			throw new Error("Failed to add link: couldn't locate link button");
 		} else {
 			createLinkEl.click();
 		}
-	});
+	}, true);
 }
 
 /**
  * Runs {@param callback} whenever Ctrl+{@param key} is pressed
  * within the {@param element} context
+ * 
+ * Prevents default if {@param preventDefault}
  */
-function detectCtrlAndKey(key: string, element: HTMLElement, callback: () => void) {
+function detectCtrlAndKey(key: string, element: HTMLElement, callback: () => void, preventDefault = false) {
 	element.addEventListener("keydown", event => {
 		if (event.key === key && (event.metaKey || event.ctrlKey)) {
+			if (preventDefault) {
+				event.preventDefault();
+			}
 			callback();
 		}
 	});
@@ -87,14 +125,14 @@ function detectCtrlAndKey(key: string, element: HTMLElement, callback: () => voi
  * Clicks `elementToSubmit` whenever Ctrl+Enter is pressed in the context of `elementToListenOn`
  */
 export function submitOnCtrlEnter(elementToListenOn: HTMLElement, elementToSubmit: HTMLElement) {
-	detectCtrlAndKey("Enter", elementToListenOn, () => elementToSubmit.click());
+	detectCtrlAndKey("Enter", elementToListenOn, () => elementToSubmit.click(), true);
 }
 
 /**
  * Gets the base URL of the ticket interaction screen
  * which is the prefix for things like view and edit
  */
-export const TICKETS_BASE_URL = `${BASE_URL}/Apps/40/Tickets/`;
+export const TICKETS_BASE_URL = `${BASE_URL}/Apps/40/Tickets`;
 
 /**
  * Gets as much information about a client in the contact box as possible.
@@ -161,7 +199,7 @@ export function getRequestor(): AtLeast<ITDXPerson, "name" | "email"> {
 	// todo get uin
 	let uin;
 	const uinEl = personCard.children[4];
-	if (uinEl !== null && uinEl.textContent !== null) {
+	if (uinEl !== undefined && uinEl.textContent !== null) {
 		// will auto-trim
 		if (!Number.isNaN(Number(uinEl.textContent))) {
 			uin = Number(uinEl.textContent); //parseInt(uinEl.textContent, 10) //+uinEl.textContent
@@ -175,4 +213,101 @@ export function getRequestor(): AtLeast<ITDXPerson, "name" | "email"> {
 		netid: netIDFromEmail(email) ?? undefined, // if possible
 		id, // if possible
 	};
+}
+
+/**
+ * Collapses an element {@param el}
+ * into an expandable accordian
+ * with the label {@param label} or blank
+ *
+ * Hides by default according to {@param hideInitially}
+ * 
+ * @returns a reference to the created collapser
+ *
+ * @remarks
+ * Assumes that `el.parentElement` exists,
+ * namely, that `el` is not the root `html` element.
+ *
+ * @internalRemarks
+ * Different than the dropdown used for hiding ticket view details
+ * since that version required hacking around the data
+ */
+export function collapseEl(el: HTMLElement, label?: string, hideInitially = true) {
+	// todo modify tabindex
+	const collapser = document.createElement("div");
+	const dropdownIcon = document.createElement("i");
+	dropdownIcon.className = "fa fa-lg";
+	collapser.appendChild(dropdownIcon);
+	const labelEl = document.createElement("span");
+	collapser.appendChild(labelEl);
+
+	const hide = () => {
+		el.style.display = "none";
+		dropdownIcon.classList.add("fa-caret-right");
+		dropdownIcon.classList.remove("fa-caret-down");
+		if (label !== undefined) {
+			labelEl.textContent = `Show ${label}`;
+		} else {
+			labelEl.textContent = "Show more";
+		}
+	};
+	const show = () => {
+		el.style.display = "block";
+		dropdownIcon.classList.remove("fa-caret-right");
+		dropdownIcon.classList.add("fa-caret-down");
+		if (label !== undefined) {
+			labelEl.textContent = `Hide ${label}`;
+		} else {
+			labelEl.textContent = "Hide more";
+		}
+	};
+	collapser.style.cursor = "pointer";
+
+	let shown = false;
+	collapser.addEventListener("click", () => {
+		shown = !shown;
+		if (shown) {
+			show();
+			// shawn
+		} else {
+			hide();
+		}
+	});
+
+	if (hideInitially) {
+		hide();
+	}
+
+	// see @remarks with any concerns
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	el.parentElement!.insertBefore(collapser, el);
+
+	return collapser;
+}
+
+/**
+ * Runs {@param listener} every time the WYSIWYG el on screen is loaded
+ * (i.e. its contentDocument DOM is loaded)
+ * which often is right after it has been unloaded in a refresh.
+ */
+export async function onWysiwygLoad(listener: () => void): Promise<void> {
+	const wys = await getWysiwygEl();
+	wys.addEventListener("load", listener);
+	/*watchDOMChanges(await getWysiwygDocument(), changes => {
+		changes.forEach(change => {
+			// if indicated that there has been a refresh
+			//if (change.target.nodeName === "TITLE")
+			//if (change.addedNodes.some((node: Node) => node.nodeType === Node.DOCUMENT_NODE)) { // <html>
+			for (const node of change.addedNodes) {
+				//if (node.nodeName === "HEAD")
+				if (node.nodeType === Node.DOCUMENT_TYPE_NODE) { // <!doctype>
+					// let it finish loading
+					// todo: listen for Wysiwyg body load
+					setTimeout(listener, 100);
+					break;
+				}
+			}
+		});
+	});*/
+	return;
 }

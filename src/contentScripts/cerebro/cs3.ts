@@ -1,9 +1,5 @@
 // <rule name="Cerebro/flagger/Highlight/Yellow">
-import { getYellowInfo } from "utils/webpage/foreground/cerebro";
+import { getYellowInfo, highlightInfo } from "utils/webpage/foreground/cerebro";
 
-(() => {
-	// todo
-	//getYellowInfo()
-	// todo tooltip on hover
-	//x.setAttribute("title", datum.note);
-})();
+
+highlightInfo(getYellowInfo(), "#f8f5c7");

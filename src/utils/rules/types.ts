@@ -23,24 +23,30 @@ export interface ToggleableFeature {
      */
     description: string,
     /**
-     * Path for which the feature is to be run on
-     *
-     * Supports the `*` wildcard
+     * An array of the content scripts to be ran
+     * when the feature is active
      */
-    path: string,
-    /**
-	 * The path to the content script file
-	 * Relative from `contentScripts/`
-	 *
-	 * Should include the file extension.
-	 *
-	 * To be ran in the foreground
-     * whenever `path` is navigated to
-     * and the feature is enabled
-	 *
-	 * @remarks
-	 * The associated script should have the first line like
-	 * // <rule name="rule.name">
-     */
-    scriptPath: string,
+    contentScripts: Array<{
+        /**
+         * URL path for which the feature is to be run on
+         *
+         * Supports the `*` wildcard
+         */
+        url: string,
+        /**
+         * The filesystem path to the content script file
+         * Relative from `contentScripts/`
+         *
+         * Should include the file extension.
+         *
+         * To be ran in the foreground
+         * whenever `url` is navigated to
+         * and the feature is enabled
+         *
+         * @remarks
+         * The associated script should have the first line like
+         * // <rule name="rule.name">
+         */
+        script: string,
+    }>,
 }

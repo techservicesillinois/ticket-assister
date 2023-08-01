@@ -26,6 +26,9 @@ build/
 # releases (production builds)
 releases/
 
+# temporary files
+tmp/
+
 # yarn v2
 .yarn/cache
 .yarn/unplugged

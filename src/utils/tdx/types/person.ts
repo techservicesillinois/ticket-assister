@@ -13,7 +13,7 @@ export interface ITDXPersonBasic {
      * A UUID of the person, as stored in TDX.
      * 
      * @remarks
-     * Should be locatable at BASE_URL/TDNext/Apps/People/PersonDet.aspx?U={id}
+     * Should be locatable at BASE_URL/Apps/People/PersonDet.aspx?U={id}
      */
     id: string,
     /**
@@ -106,11 +106,11 @@ export class TDXPerson implements ITDXPerson {
      */
     static async fromId(id: string): Promise<TDXPerson> {
         return new Promise((res, rej) => {
-            /*fetch(BASE_URL + "/TDNext/Apps/People/PersonDet.aspx?U="+id)
+            /*fetch(BASE_URL + "/Apps/People/PersonDet.aspx?U="+id)
               .then(verifyFetchSuccess)
               .then(getDomFromText)
               .then(dom => {
-                if (window.location.href === BASE_URL + "/TDNext/Apps/Shared/ItemNotFound.aspx?ItemType=User") {
+                if (window.location.href === BASE_URL + "/Apps/Shared/ItemNotFound.aspx?ItemType=User") {
                   // redirected
                   rej("Not found"); // or could return null
                 }
@@ -128,7 +128,7 @@ export class TDXPerson implements ITDXPerson {
                   rej(FetchErrorMessage.UNEXPECTED_RESPONSE);
                 }
               }, err => rej(FetchErrorMessage.NETWORK_ERROR));*/
-            fetch(BASE_URL + "/TDNext/Apps/40/Tickets/Requestor?requestorUid=" + id + "&FormId=107")
+            fetch(BASE_URL + "/Apps/40/Tickets/Requestor?requestorUid=" + id + "&FormId=107")
                 .then(res => {
                     if (!res.ok) {
                         throw new Error("res not ok");
@@ -163,7 +163,7 @@ export class TDXPerson implements ITDXPerson {
      * while eliminating another network request
      * (won't need to call TDXPerson.fromBasic which calls TDXPerson.fromID which `fetch`es).
      *
-     * Instead, could POST to BASE_URL/TDNext/Apps/40/Shared/UserLookupMulti.aspx?AllowCurrentUser=1&IncludeAllServiceAccounts=1&IncludeAllUsers=1&NameField=lu_text_1&IDField=filter_value_1&Selected=undefined
+     * Instead, could POST to BASE_URL/Apps/40/Shared/UserLookupMulti.aspx?AllowCurrentUser=1&IncludeAllServiceAccounts=1&IncludeAllUsers=1&NameField=lu_text_1&IDField=filter_value_1&Selected=undefined
      * to get comparable data
      */
     private static async search(query: string): Promise<TDXPerson> {
@@ -175,7 +175,7 @@ export class TDXPerson implements ITDXPerson {
             formData.set("phoneNumber", "");
             formData.set("isActiveStatus", "");
             formData.set("userTypeFilters", "27"); // all people types (User, Customer)
-            fetch(BASE_URL + "/TDNext/Apps/People/PeopleSearch?page=",
+            fetch(BASE_URL + "/Apps/People/PeopleSearch?page=",
                 {
                     method: "POST",
                     body: formData,

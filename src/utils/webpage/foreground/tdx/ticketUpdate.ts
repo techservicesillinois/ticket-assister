@@ -56,6 +56,18 @@ export function getNewStatus(): Status | undefined {
  */
 export function setNewStatus(newStatus: Status) {
 	getStatusChangeEl().value = newStatus;
+	/*const statusSelectEl = getStatusChangeEl();
+	for (const child of statusSelectEl.children) {
+		if (!(child instanceof HTMLOptionElement)) {
+			// this is not the case
+			continue;
+		}
+		if (child.textContent === newStatus) {
+			statusSelectEl.value = child.value;
+			return;
+		}
+	}
+	throw new Error(`Failed to set status to "${newStatus}": Could not find that status name as an option.`);*/
 }
 
 /**
@@ -75,8 +87,7 @@ export function setNewStatus(newStatus: Status) {
 export async function setPrefill(data: LimitedHTML): Promise<void> {
 	const filledData = await replacePrefillVariables(data);
 	setComments(filledData);
-	// todo focus
-	moveCursorToDesignatedLocationAndStrip(getWysiwygBody(), getWysiwygWindow());
+	moveCursorToDesignatedLocationAndStrip(await getWysiwygBody(), await getWysiwygWindow());
 }
 /**
  * Sets the value of the Comments WYSIWYG editor
@@ -85,8 +96,8 @@ export async function setPrefill(data: LimitedHTML): Promise<void> {
  * @remarks
  * Some HTML is stripped on submission (e.g. `<script>`s)
  */
-function setComments(comments: LimitedHTML): void {
-	getWysiwygBody().innerHTML = comments;
+async function setComments(comments: LimitedHTML): Promise<void> {
+	(await getWysiwygBody()).innerHTML = comments;
 }
 /**
  * Replaces variables in the HTML string
@@ -112,7 +123,9 @@ async function replacePrefillVariables(comments: LimitedHTML): Promise<LimitedHT
 	 */
 	function replaceWith(variableName: string, newValue: string) {
 		//return comments.split(`{${variableName}}`).join(newValue);
-		comments = comments.replace(`/{${variableName}}/g`, newValue);
+		// escape special regex characters
+		const cleanedSearch = variableName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+		comments = comments.replace(new RegExp(`\\{${cleanedSearch}\\}`, "g"), newValue);
 	}
 	try {
 		const clientName = parseName(getRequestor().name);
@@ -150,8 +163,8 @@ async function replacePrefillVariables(comments: LimitedHTML): Promise<LimitedHT
 
 	for (const { index: openingBraceIndex } of comments.matchAll(/{/g)) {
 		const closingBraceIndex = comments.indexOf("}", openingBraceIndex);
-		const attemptedVariable = comments.substring(openingBraceIndex ?? 0, closingBraceIndex);
-		if (attemptedVariable !== "{cursor}") {
+		const attemptedVariable = comments.substring((openingBraceIndex ?? 0) + 1, closingBraceIndex);
+		if (attemptedVariable !== "cursor") {
 			log.w(`Attempted to use unknown brace variable ${attemptedVariable}`);
 		}
 	}
@@ -184,9 +197,13 @@ function findChildWithinText(root: Node, searchFor: string): Node | null {
  *
  * @remarks
  * If no {cursor} designation found, will not move the cursor
+ * 
+ * @todo This does not work
+ * Will not focus within the iframe without a click
+ * from the user
  */
 function moveCursorToDesignatedLocationAndStrip(contentEditableElement: HTMLElement, window: Window): void {
-	const nodeToMoveCursorTo = findChildWithinText(getWysiwygBody(), "{cursor}");
+	const nodeToMoveCursorTo = findChildWithinText(contentEditableElement, "{cursor}");
 	if (nodeToMoveCursorTo === null) return;
 
 	const range = document.createRange();

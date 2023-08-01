@@ -1,0 +1,1 @@
+(()=>{const a=document.getElementById("beacon-formValue");window.$("#FormID").select2("val", a.getAttribute("beacon-value")).trigger("change");a.parentElement.removeChild(a);})();

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getSubstringBetween, conformsToHTMLTags, DEFAULT_ALLOWED_TAGS, stringBeginsWith, changeExtension } from "./stringParser";
+import { getSubstringBetween, conformsToHTMLTags, DEFAULT_ALLOWED_TAGS, stringBeginsWith, changeExtension, squishArray } from "./stringParser";
 
 describe("getSubstringBetween", () => {
     it("should return 'cool' when given 'this is {something{cool}}, right?', 'thing{', '}'", () => {
@@ -131,5 +131,15 @@ describe("changeExtension", () => {
         expect(changeExtension("path/to/file.txt", "")).toBe("path/to/file");
         expect(changeExtension("no/one/likes/.DS_STORE", "")).toBe("no/one/likes/"); // tricky
         expect(changeExtension("path/to/file", "")).toBe("path/to/file");
+    });
+});
+describe("squishArray", () => {
+    it("converts the string into comma separated values with no trailing spaces", () => {
+        expect(squishArray(["these", "are", "some", "words"])).toBe("these, are, some, words");
+        expect(squishArray(["a"])).toBe("a");
+        expect(squishArray(["a", "b"])).toBe("a, b");
+        expect(squishArray(["a", "b, c"])).toBe("a, b, c");
+        expect(squishArray(["a", "b", "c"])).toBe("a, b, c");
+        expect(squishArray(["a", "b", "c", "f", "f", "f"])).toBe("a, b, c, f, f, f");
     });
 });

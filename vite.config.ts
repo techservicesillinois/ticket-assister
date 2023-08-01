@@ -30,8 +30,9 @@ export default defineConfig({
                 // pages
                 index: path.join(pagesDir, "/index.html"),
                 options: path.join(pagesDir, "/options.html"),
+                trouble: path.join(pagesDir, "/trouble.html"), // help page
                 // service worker
-                serviceWorker: path.join(rootDir, "/rules/contentScriptUpdater.ts"),
+                serviceWorker: path.join(rootDir, "/serviceWorker.ts"),
                 // content scripts
                 // built in buildContentScripts.ts in iife
             },

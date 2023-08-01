@@ -1,8 +1,9 @@
 // <rule name="TDX/Ticket/Edit/Ctrl+Enter to submit comment">
-import * as ticketEdit from "utils/webpage/foreground/tdx/ticketEdit";
-import { getWysiwygDocument, submitOnCtrlEnter } from "utils/webpage/foreground/tdx/shared";
+import { getSaveButton } from "utils/webpage/foreground/tdx/ticketEdit";
+import { getWysiwygBody, submitOnCtrlEnter } from "utils/webpage/foreground/tdx/shared";
 
-(() => {
-    submitOnCtrlEnter(document.body, ticketEdit.getSaveButton());
-    submitOnCtrlEnter(getWysiwygDocument().body, ticketEdit.getSaveButton());
+
+submitOnCtrlEnter(document.body, getSaveButton());
+(async () => {
+    submitOnCtrlEnter(await getWysiwygBody(), getSaveButton());
 })();

@@ -11,11 +11,20 @@ import { DomParseError } from "utils/errors";
 
 /**
  * Assigns responsibility of the current ticket to the current user
+ * Adds to "My Work" if {@param addToMyWork}
  * 
  * @throws if on a page which does not contain a ticket number (bubbled from {@link getCurrentTicketNumber()})
+ * 
+ * @param ticketID the id of the ticket to take
+ * 
+ * @remarks
+ * Simulates pressing the "take" button.
+ * @see {@link assignResponsibilityBg}
+ * 
+ * @todo refactor to reuse some code from {@link assignResponsibilityBg}
  */
-export async function takePrimRespBg() {
-    return new Promise((res, rej) => {
+export async function takeResponsibilityBg(ticketID: TicketID, addToMyWork = false): Promise<void> {
+    /*return new Promise((res, rej) => {
         getCurrentPerson().then(currentPerson => {
             assignResponsibilityBg(getCurrentTicketNumber(), currentPerson)
                 .then(
@@ -24,6 +33,74 @@ export async function takePrimRespBg() {
                 );
         })
             .catch(rej);
+    });*/
+    return new Promise((res, rej) => {
+        fetch(BASE_URL + "/Apps/40/Tickets/TicketDet?TicketID=" + ticketID)
+            .then(verifyFetchSuccess)
+            .then(getDomFromText)
+            .then(dom => {
+                const wrappers = dom.querySelectorAll('body > form[action="./TicketDet?TicketID=' + ticketID + '"] > div.aspNetHidden');
+                const metaData = new Map();
+                if (wrappers.length < 2) {
+                    // couldn't find required components to assign responsibility
+                    rej(FetchErrorMessage.UNEXPECTED_RESPONSE);
+                }
+                for (const wrapper of wrappers) {
+                    wrapper.querySelectorAll('input[type="hidden"]').forEach(input => {
+                        // input.name should be even with input.id
+                        if (!input.hasAttribute("name") || !input.hasAttribute("value")) {
+                            return; // skip it
+                        }
+                        metaData.set(input.getAttribute("name"), input.getAttribute("value"));
+                    });
+                }
+                const formData = new FormData();
+                formData.set("ScriptManager1", "upTicketAssignment|btnTakeTicket");
+                formData.set("__EVENTTARGET", "btnTakeTicket"); // overwritten incorrectly: clicking button should set to btnAdd
+                formData.set("__EVENTARGUMENT", ""); // overwritten, but not necessary
+                //formData.set("__VIEWSTATE", "..."); // overwritten
+                formData.set("__VIEWSTATEGENERATOR", "64491348"); // overwritten, but usually the same
+                //formData.set("__EVENTVALIDATION", "..."); // overwritten
+                formData.set("hdnTicketTaskID", "");
+                formData.set("hdnWorkflowStepID", "0");
+                formData.set("hdnIsInMyWork", addToMyWork ? "1" : "0");
+                formData.set("itTags$hdnTags", "");
+                formData.set("txtComments$txtEditor$txtBody", "");
+                formData.set("txtActionComments", "");
+                formData.set("hdnStepID", "");
+                formData.set("hdnActionID", "");
+                formData.set("taluWorkspace$txttaluWorkspace", "");
+                formData.set("taluWorkspace$hdntaluWorkspace", "");
+                formData.set("taluWorkspace$hdnTextValuestaluWorkspace", "");
+                formData.set("__ASYNCPOST", "true"); // probably not needed
+                // overwrite and add __VIEWSTATE, __VIEWSTATEGENERATOR, __EVENTVALIDATION
+                // also (probably not needed) __EVENTTARGET, __EVENTARGUMENT
+                metaData.forEach((v, k) => {
+                    if (["__VIEWSTATE", "__VIEWSTATEGENERATOR", "__EVENTVALIDATION", "__EVENTARGUMENT"].includes(k)) {
+                        log.d(`Adding ${v} => ${k}`);
+                        formData.set(k, v);
+                    }
+                });
+                if (!(formData.has("__EVENTVALIDATION") || formData.has("__VIEWSTATE"))) {
+                    log.w("Don't have all the form data necessary: Request will fail!"); // just a w for now. will e upon net req
+                }
+
+                // cookies, including __RequestVerificationToken_L1RETmV4dA2 and __AntiXsrfToken, should be included
+                fetch(BASE_URL + "/Apps/40/Tickets/TicketDet?TicketID=" + ticketID, {
+                    method: "POST",
+                    body: formData,
+                })
+                    .then(verifyFetchSuccess)
+                    .then(text => {
+                        // should have like #upResponsibility > a.textContent === Group Name / User Name also...
+                        if (text.substring(1, 5) !== "|#||" || text.indexOf("TeamDynamix.Feeds.refreshFeed('ticketFeed')") === -1 || (text.match(/Take [a-zA-z]+/)?.length ?? 0) !== 0) {
+                            log.d(`Network request to take responsibility was successful, but the response indicated that the operation failed.`);
+                            return rej(FetchErrorMessage.UNEXPECTED_RESPONSE);
+                        }
+                        res();
+                    });
+            },
+                () => rej(FetchErrorMessage.NETWORK_ERROR));
     });
 }
 
@@ -40,7 +117,7 @@ export async function takePrimRespBg() {
  */
 export function getCurrentPerson(): Promise<ITDXPersonBasic> {
     return new Promise((res, rej) => {
-        fetch(BASE_URL + "/TDNext/Home/Desktop/Default.aspx")
+        fetch(BASE_URL + "/Home/Desktop/Default.aspx")
             .then(verifyFetchSuccess)
             .then(getDomFromText)
             .then(dom => {
@@ -51,7 +128,8 @@ export function getCurrentPerson(): Promise<ITDXPersonBasic> {
                 }
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 const val = valEl.getAttribute("onclick")!; // bang (safe because just checked)
-                const startChunk = "openWin('/TDNext/Apps/People/PersonDet.aspx?U="; // javascript:
+                const absoluteBase = BASE_URL.substring(BASE_URL.indexOf("/", 8)); // /TDNext or /SBTDNext
+                const startChunk = `openWin('${absoluteBase}/Apps/People/PersonDet.aspx?U=`; // javascript:
                 const endChunk = "'";
                 const startIdx = val.indexOf(startChunk) + startChunk.length;
                 /*res(new TDXPerson({
@@ -74,10 +152,12 @@ export function getCurrentPerson(): Promise<ITDXPersonBasic> {
  * @param responsible - The person to assign responsibility to
  * @param comment? - Comments to include in the feed when assigning. Defaults to no note with notification on.
  * @returns a Promise, resolving if successful and rejecting otherwise
+ * 
+ * @see {@link takeResponsibilityBg} if {@param response} is the current user.
  */
 export function assignResponsibilityBg(ticketID: TicketID, responsible: ITDXPersonBasic, comment: IAssignCommentOptions = { text: "", notify: false }): Promise<void> {
     return new Promise((res, rej) => {
-        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketReassign?TicketID=" + ticketID)
+        fetch(BASE_URL + "/Apps/40/Tickets/TicketReassign?TicketID=" + ticketID)
             .then(verifyFetchSuccess)
             .then(getDomFromText)
             .then(dom => {
@@ -123,13 +203,14 @@ export function assignResponsibilityBg(ticketID: TicketID, responsible: ITDXPers
                 }
 
                 // cookies, including __RequestVerificationToken_L1RETmV4dA2 and __AntiXsrfToken, should be included
-                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketReassign?TicketID=" + ticketID, {
+                fetch(BASE_URL + "/Apps/40/Tickets/TicketReassign?TicketID=" + ticketID, {
                     method: "POST",
                     body: formData,
                 })
                     .then(verifyFetchSuccess)
                     .then(text => {
-                        if (text.substring(1, 4) !== "|#||" || text.toLowerCase().indexOf("|scriptBlock|ScriptContentNoTags|if (window.opener && !window.opener.closed) {   if(window.opener.refresh) {window.opener.refresh();}  else {window.opener.location.href = window.opener.location.href;}} window.close();|") !== -1) {
+                        if (text.substring(1, 5) !== "|#||" || text.indexOf("|scriptBlock|ScriptContentNoTags|if (window.opener && !window.opener.closed) {   if(window.opener.refresh) {window.opener.refresh();}  else {window.opener.location.href = window.opener.location.href;}} window.close();|") === -1) {
+                            log.d(`Network request to assign responsibility was successful, but the response indicated that the operation failed.`);
                             return rej(FetchErrorMessage.UNEXPECTED_RESPONSE);
                         }
                         res();
@@ -149,7 +230,7 @@ export function assignResponsibilityBg(ticketID: TicketID, responsible: ITDXPers
 function commentBg(ticketID: TicketID, comment: ICommentOptions): Promise<void> {
     return new Promise((res, rej) => {
         return rej("Not tested");
-        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet.aspx?TicketID=" + ticketID)
+        fetch(BASE_URL + "/Apps/40/Tickets/TicketDet.aspx?TicketID=" + ticketID)
             .then(verifyFetchSuccess)
             .then(getDomFromText)
             .then(dom => {
@@ -209,7 +290,7 @@ function commentBg(ticketID: TicketID, comment: ICommentOptions): Promise<void> 
                 }
 
                 // cookies, including __RequestVerificationToken_L1RETmV4dA2 and __AntiXsrfToken, should be included
-                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/TicketDet.aspx?TicketID=" + ticketID, {
+                fetch(BASE_URL + "/Apps/40/Tickets/TicketDet.aspx?TicketID=" + ticketID, {
                     method: "POST",
                     body: formData,
                 })
@@ -312,7 +393,7 @@ function updateBg(ticketID: TicketID, params: { status?: Status, message: Limite
 							res(false);
 						}
 					},
-					err => console.error("error checking")
+					err => log.e("error checking")
 					);
 			});
 		}
@@ -324,23 +405,23 @@ function updateBg(ticketID: TicketID, params: { status?: Status, message: Limite
 			updateRequetVerificationToken(ticketArray[0])
 				.then(res => {
 					if (res == false) {
-						console.error("failed to get request verification token");
+						log.e("failed to get request verification token");
 					}
 					ticketArray.forEach(ticketID => {
 						checkRequestorNameBg(ticketID, "U of I Box (Alias)")
 							.then(requestIsOk => {
 								if (requestIsOk) {
 									if (requestVerificationToken == null) {
-										console.error(`Didn't update t#${ticketID} because requestVerificationToken is null!`);
+										log.e(`Didn't update t#${ticketID} because requestVerificationToken is null!`);
 									} else {
 										fn(ticketID)
-											.then(()=>console.log(`${ticketID} successfully modified.`))
-											.catch(err=>console.error(ticketID+":", err));
+											.then(()=>log.i(`${ticketID} successfully modified.`))
+											.catch(err=>log.e(ticketID+":", err));
 									}
 								} else {
-									console.warn(`Didn't update t#${ticketID} since the requestor couldn't be verified.`);
+									log.w(`Didn't update t#${ticketID} since the requestor couldn't be verified.`);
 								}
-							}, err => console.log("couldn't verify requestor", err));
+							}, err => log.e("couldn't verify requestor", err));
 					});
 				});
 		}
@@ -374,7 +455,7 @@ function updateBg(ticketID: TicketID, params: { status?: Status, message: Limite
 function editBg(ticketID: TicketID, params: { requestor?: ITDXPerson, status?: Status, createdVia?: CreateMethod, requestArea?: SRA, responsible?: ITDXPerson, title?: string, description?: LimitedHTML }): Promise<void> {
     return new Promise((res, rej) => {
         // return rej("Not fully implemented");
-        fetch(BASE_URL + "/TDNext/Apps/40/Tickets/Edit?TicketID=" + ticketID)
+        fetch(BASE_URL + "/Apps/40/Tickets/Edit?TicketID=" + ticketID)
             .then(verifyFetchSuccess)
             .then(getDomFromText)
             .then(dom => {
@@ -475,7 +556,7 @@ function editBg(ticketID: TicketID, params: { requestor?: ITDXPerson, status?: S
                 if (params.requestArea !== undefined) formData.set(getAttributeFor("Request Area"), params.requestArea);
 
                 // cookies, including __RequestVerificationToken_L1RETmV4dA2 and __AntiXsrfToken, should be included
-                fetch(BASE_URL + "/TDNext/Apps/40/Tickets/Edit?TicketID=" + ticketID, {
+                fetch(BASE_URL + "/Apps/40/Tickets/Edit?TicketID=" + ticketID, {
                     method: "POST",
                     body: formData,
                 })
@@ -532,6 +613,8 @@ export async function checkRequestorNameBg(ticketID: TicketID, requestorName: st
  * May include internal `\n`s, which can be stripped with a utility
  *
  * @todo refactor this to return all data about a ticket
+ * 
+ * @see {@link getTicketStatusBg}
  */
 export async function getTicketDatumBg(ticketID: TicketID, fieldValue: string): Promise<string | undefined> {
 	return new Promise((res, rej) => {
@@ -539,14 +622,30 @@ export async function getTicketDatumBg(ticketID: TicketID, fieldValue: string): 
 			.then(verifyFetchSuccess)
 			.then(getDomFromText)
 			.then(dom => {
-				// todo
 				//const sectionToSearchIn = dom.querySelector("#divDetails");
-				const sectionToSearchIn = dom.querySelector("#divContent")?.children[0].children[0];
+				const sectionToSearchIn = dom.querySelector("#divContent")?.children[0]?.children[0];
 				if (!sectionToSearchIn || !(sectionToSearchIn instanceof HTMLElement)) {
 					return rej(new DomParseError());
 				}
 				const dets = getTicketDatumsRecursively(sectionToSearchIn);
-				return dets[fieldValue];
+				res(dets[fieldValue]);
+			},
+			() => rej(FetchErrorMessage.NETWORK_ERROR)
+		);
+	});
+}
+/**
+ * Gets the current status of the ticket
+ */
+export async function getTicketStatusBg(ticketID: TicketID): Promise<string | undefined> {
+	return new Promise((res, rej) => {
+		fetch(getTicketViewUrl(ticketID))
+			.then(verifyFetchSuccess)
+			.then(getDomFromText)
+			.then(dom => {
+                // shouldn't need trimming, but just in case
+                //res(dom.querySelector(".status")?.textContent?.trim());
+                res(dom.querySelector("#thTicket_lblStatus")?.textContent?.trim());
 			},
 			() => rej(FetchErrorMessage.NETWORK_ERROR)
 		);
@@ -571,7 +670,7 @@ export function getTicketDatumsRecursively(node: HTMLElement): Record<string, st
 	for (const child of node.children) {
 		const child0 = child.children[0];
 		const child1 = child.children[1];
-        if ((child instanceof HTMLElement && child0 instanceof HTMLElement && child1 instanceof HTMLElement)) { // should always be true
+        if ((child instanceof HTMLElement && child0 instanceof HTMLElement)) { // should always be true
             if (
                 child0 !== undefined && child0.nodeName === "SPAN" && child0.className === "control-label"
                 && child1 !== undefined && child1.nodeName === "DIV"

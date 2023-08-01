@@ -48,11 +48,13 @@ export const hotkeyRules: Record<string, () => void> = {
 	},
 	"t": () => {
 		// Take primary responsibility (if unassigned)
-		const takeButton = document.querySelector("#divTakeTicket");
+		const takeButton = document.querySelector("#btnTakeTicket");
 		if (takeButton !== null  && (takeButton instanceof HTMLElement)) {
 			// TDX will only render if unassigned
 			takeButton.click();
+			// unfortunately will still alert confirmation
 		} else {
+			log.i(`No take button found; not taking responsibility.`);
 			// check unassigned
 			/*
 			// hard to tell...
@@ -64,7 +66,8 @@ export const hotkeyRules: Record<string, () => void> = {
 				&& (responsibility === "Unassigned"
 				|| responsibility.indexOf("UIUC-") !== -1)
 			) {
-				takePrimRespBg(); // import { takePrimRespBg } from "./utils/webpage/background/ticketActions";
+				takeResponsibilityBg(getCurrentTicketNumber());
+				// fallback: window.__doPostBack("btnTakeTicket", "")
 			}
 			*/
 		}
@@ -98,8 +101,8 @@ export const hotkeyRules: Record<string, () => void> = {
 	},
 };
 export const hotkeyRules2: Record<string, () => void> = {
-	"e": () => {
-		// Escalate (reassign)
+	"a": () => {
+		// Aassign (reassign/escalate)
 		const reassignButton = document.querySelector("#divReassignTicket");
 		if (reassignButton === null || !(reassignButton instanceof HTMLElement)) {
 			log.e("Failed to scroll to top of feed section");

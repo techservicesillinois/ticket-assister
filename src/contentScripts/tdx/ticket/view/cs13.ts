@@ -1,7 +1,14 @@
 // <rule name="TDX/Ticket/View/Ctrl+Enter to submit comment">
-import * as ticketView from "utils/webpage/foreground/tdx/ticketView";
-import { getWysiwygDocument, submitOnCtrlEnter } from "utils/webpage/foreground/tdx/shared";
+import{ getCommentSaveButton } from "utils/webpage/foreground/tdx/ticketView";
+import { getWysiwygBody, onWysiwygLoad, submitOnCtrlEnter } from "utils/webpage/foreground/tdx/shared";
+import { log } from "utils/logger";
 
-(() => {
-	submitOnCtrlEnter(getWysiwygDocument().body, ticketView.getCommentSaveButton());
-})();
+const addListener = async () => {
+    log.d(`Adding Ctrl+Enter listener on WYSIWYG`);
+    submitOnCtrlEnter(await getWysiwygBody(), getCommentSaveButton());
+};
+// add the listener now
+addListener();
+// and add it every time there was a refresh change (every time submitted or cancelled)
+// note that this is via ctrl+enter OR button press
+onWysiwygLoad(addListener);

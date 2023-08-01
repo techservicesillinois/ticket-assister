@@ -16,13 +16,24 @@
 		.presets-wrapper {
 			display: flex;
 			flex-direction: row;
+
+			background: linear-gradient(90deg, transparent, #888);
+			border: 2px ridge black;
+			padding: 1em;
+			border-radius: 1em;
+		}
+		.presets-wrapper > #presets {
+			margin-left: 0.5em;
 		}
 		
-		#options-wrapper > .branch {
-			font-weight: bold;
+		#options-wrapper div.section-title {
+			font-weight: 800;
 		}
 		#options-wrapper .branch {
 			list-style-type: none;
+		}
+		#options-wrapper {
+			margin: 2em 1em;
 		}
 		
 		.fade {
@@ -34,20 +45,58 @@
 		}
 
         .download-logs {
-            /* todo style download logs button */
+            /* something hideous */
+			background: radial-gradient(rgb(231 17 165) 0%, transparent 30%, #1f7541);
+    		border: 3px double #aeeac6;
         }
 
 		.option-wrapper {
-			
+			margin-left: 2em;
+			padding-bottom: 1em;
 		}
-		.option-wrapper label {
-			
+		.option-wrapper > * {
+			margin: 0;
 		}
 		.option-wrapper .details {
-			
+			white-space: pre-wrap;
 		}
 		.option-wrapper .runs-on {
 			font-style: italic;
+			padding-left: 1em;
+			font-size: 0.75em;
+		}
+		.option-wrapper .runs-on::before {
+			content: "🏃‍♂️";
+		}
+		.option-wrapper > label, .option-wrapper > label input {
+			cursor: pointer;
+			font-weight: 700;
+		}
+
+		.branch {
+			padding-left: 5px;
+			/* color overridden based on level */
+			border-left: 2px solid #64cdff;
+			margin-left: 2em;
+		}
+		.branch.lvl-0 {
+			border: none;
+			margin: 0;
+		}
+		.branch.lvl-1 {
+			border-left-color: rgb(50 50 50);
+		}
+		.branch.lvl-2 {
+			border-left-color: rgb(100 100 100);
+		}
+		.branch.lvl-3 {
+			border-left-color: rgb(150 150 150);
+		}
+		.branch.lvl-4 {
+			border-left-color: rgb(200 200 200);
+		}
+		.branch > .section-title {
+			border-bottom: 2px double #cacaca;
 		}
     </style>
     <!--<script type="application/javascript" src="browser-polyfill.js"></script>-->
@@ -56,6 +105,8 @@
     <h1>Options | Ticket Assister</h1>
 
     <p class="subtitle">Enable/disable features</p>
+
+	<p><a href="/pages/trouble.html">Help!</a></p>
 
     <div class="presets-wrapper">
         <p>Preset: </p>

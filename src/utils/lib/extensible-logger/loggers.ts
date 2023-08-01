@@ -25,11 +25,13 @@ export function readableLogLevel(logLevel: LogLevel): string {
         case LogLevel.Info:
             return "info";
         case LogLevel.Warning:
-            return "warning";
+            // shorter version fits nicer within tabs
+            return "warn";
         case LogLevel.Error:
             return "error";
         case LogLevel.Critical:
-            return "critical";
+            // shorter version fits nicer within tabs
+            return "crit";
     }
 }
 

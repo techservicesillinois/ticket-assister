@@ -1,37 +1,30 @@
 # Todo
 
-## Next up
+## Before launch
 
-- finish options page
-	- show descriptions
-	- tree out
-	- save Custom to storage
-- create page:
-	- finish quick select
-	- auto select Service Request
-	- auto select Phone as source
-	- modify tabindex
-	- hide additional contacts (click to expand)
-- cerebro connection
 - cache getUser in chrome.storage (refresh weekly)
-
-
-## General
-
-- add logging for debugging in production
+- setNotice in optionsInteractions needs to be more consistent and display better
+- logging should print current function and maybe stacktrace (at least for log.e)
+- set up basic macros
+- try catch content scripts
+- try catch sw and optionsInteractions
+- options: on click input, if preset !== custom, move all options from preset to custom, flipping the one clicked
 - add `@src/*`, `@utils/*`, `@config`, `@rules/*` import paths
-    - fix src/rules/* not allowing absolute imports
+    - fix src/rules/* not allowing absolute imports (eslint)
+- add logging for debugging in production
 - maybe add logging of error before `rej()`ing with generic error
     - > throw custom error with message
+
+- Set up minifiers for HTML/CSS
+    - ensure strips comments
+
+## Backlog
+
+- make configurable template for rule "TDX/Ticket/Update/Prefill response"
+
 - remove `pages/` prefix on manifest.json
     - get vite to place that directory at the root
 
-- finish spec as defined in doc
-- Prepare for production
-    - Clean up manifest.json to only contain necessary permissions
-    - Set up minifiers
-        - For JS
-        - Get vite to stop spitting out additional .mjs files
-        - For HTML/CSS
-            - also strip comments
+- complete more of spec as defined in doc
+
 - Resolve todos scattered throughout files

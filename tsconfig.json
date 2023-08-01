@@ -12,6 +12,7 @@
             "utils/*": ["utils/*"],
             "config": ["config"],
         },*/
+        "noUncheckedIndexedAccess": true,
     },
     "include": ["src"],
 }

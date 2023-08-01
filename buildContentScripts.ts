@@ -1,3 +1,6 @@
+// OUT OF SYNC.
+// Use ./buildContentScripts.mjs
+
 import { build } from "vite";
 
 import * as path from "path";
@@ -23,12 +26,27 @@ async function getContentScripts(): Promise<Record<string, string>> {
     );
 }
 
+/**
+ * Returns the file name passed with the only flag
+ * or undefined if none is passed
+ * 
+ * @todo use this to allow only certain file compilation (partial compilation)
+ */
+function onlyFileFlag() {
+    for (let i = 0; i < process.argv.length; i++) {
+        if (process.argv[i] === "--only" && i + 1 < process.argv.length) {
+            return process.argv[i + 1];
+        }
+    }
+}
+
 (async () => {
     // maybe clean contentScriptsOutDir once here?
     //Object.values(getContentScripts()).forEach(filePath => {
     for (const [entryName, filePath] of Object.entries(await getContentScripts())) {
         console.log(`Compiling ${filePath}`);
         await build({
+            mode: process.env.NODE_ENV === "development" ? "development" : undefined, // use default: production
             resolve: {
                 alias: {
                     //"@src": rootDir,

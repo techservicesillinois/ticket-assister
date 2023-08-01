@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Ticket Assister",
-    "description": "Helping you handle tickets more efficiently.",
+    "description": "Helping you handle TDX tickets more efficiently.",
     "version": "0.0.1",
 	"icons": {
 		"16": "img/icon-light-16.png",
@@ -22,16 +22,14 @@
     "permissions": [
         "storage",
         "tabs",
-        "webNavigation",
         "scripting",
         "activeTab"
     ],
     "host_permissions": [
-        "https://help.uillinois.edu/TDNext/*",
+        "https://help.uillinois.edu/*",
         "https://cerebro.techservices.illinois.edu/"
     ],
     "optional_host_permissions": [
-        "https://*/*"
     ],
     "web_accessible_resources": [
         {
@@ -39,6 +37,12 @@
             "matches": [
                 "https://help.uillinois.edu/*",
                 "https://cerebro.techservices.illinois.edu/*"
+            ]
+        },
+        {
+            "resources": ["windowScripts/triggerFormChange.js"],
+            "matches": [
+                "https://help.uillinois.edu/*"
             ]
         }
     ]

@@ -1,24 +1,34 @@
 // todo
 // see https://developer.chrome.com/docs/extensions/reference/storage/
-import presets from "../rules/presets";
-import { storageArea, updateCustomRuleStatus, updateCustomRuleStatusMultiple, getCustomRuleStatus, getCustomRuleStatusMultiple } from "utils/rules/storage";
+import presets, { CUSTOM_PRESET, DEFAULT_PRESET } from "../rules/presets";
+import { updateCustomRuleStatus, getAllCustomRuleStatuses, getCurrentPreset, setCurrentPreset, getCustomRuleStatus } from "utils/rules/storage";
 import { log } from "utils/logger";
 import rules from "../rules/rules";
+import { squishArray } from "utils/stringParser";
+import { downloadLogFileButton } from "./downloadLogFile";
 
 
 // Presets
-const presetsEl = document.querySelector("select#presets");
-const optionsEl = document.querySelector("div#options-wrapper");
-if (presetsEl === null || optionsEl === null || !(optionsEl instanceof HTMLElement)) {
+// non null assertion is cleared below
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const presetsEl = <HTMLSelectElement>document.querySelector("select#presets")!;
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const optionsElMaybe = document.querySelector("div#options-wrapper")!;
+if (presetsEl === null || optionsElMaybe === null || !(optionsElMaybe instanceof HTMLElement)) {
 	throw new Error("Page failed to load.");
 }
-const noticeEl = document.querySelector("#think-tank");
+// WE LOVE YOU TYPESCRIPT
+const optionsEl = <HTMLElement>optionsElMaybe;
+// non null assertion is cleared below
+// and so is forced cast
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const noticeEl = <HTMLElement>document.querySelector("#think-tank")!;
 if (noticeEl === null || !(noticeEl instanceof HTMLElement)) {
 	// sad
 	log.e("Failed to get noticeEl: Updates will not be shown.");
 }
-let noticeFadeTimeout = null;
-let noticeFadeTimeoutInner = null;
+let noticeFadeTimeout: NodeJS.Timeout | null = null;
+let noticeFadeTimeoutInner: NodeJS.Timeout | null = null;
 /**
  * Displays a message in the notice box,
  * fading after {@param fadeAfterMs} if specified
@@ -29,7 +39,7 @@ let noticeFadeTimeoutInner = null;
  * @todo improve animation
  * slide down old message and slide up new if overriding
  */
-function setNotice(message: string, fadeAfterMs?: number) {
+function setNotice(message: string, fadeAfterMs?: number, isError = false) {
 	log.i(`Setting notice to "${message}".`);
 	if (noticeEl === null) {
 		log.e(`Could not set noticeEl because it is null. Was going to set to "${message}".`);
@@ -40,7 +50,12 @@ function setNotice(message: string, fadeAfterMs?: number) {
 		}
 		if (noticeFadeTimeoutInner !== null) {
 			log.d(`Clearing old notice timeout inner`);
-			clearTimeout(noticeFadeTimeout);
+			clearTimeout(noticeFadeTimeoutInner);
+		}
+		if (isError) {
+			noticeEl.style.color = "#a90000";
+		} else {
+			noticeEl.style.color = "#000";
 		}
 		noticeEl.textContent = message;
 		if (fadeAfterMs !== undefined) {
@@ -49,7 +64,7 @@ function setNotice(message: string, fadeAfterMs?: number) {
 				log.d(`Fading noticeEl`);
 				noticeEl.classList.add("fade"); // 1000ms fade
 				noticeFadeTimeoutInner = setTimeout(() => {
-					noticeEl.textContent = "";
+					// hold position: don't clear out textContent
 					noticeEl.classList.remove("fade");
 				}, 1000);
 			}, fadeAfterMs);
@@ -63,31 +78,58 @@ for (const presetName of Object.keys(presets)) {
 	presetsEl.appendChild(option);
 }
 presetsEl.addEventListener("input", async evt => {
-	const presetName = evt.target?.value;
+	if (evt.currentTarget === null) {
+		// this is false
+		return;
+	}
+	// evt.currentTarget is presetsEl anyways
+	const presetName = presetsEl.value;
 	if (presetName === null) {
 		return;
 	}
-	// work with me
-	// todo fix this
-	const optionsToLoad: Record<string, boolean> | undefined = presets[presetName];
-	if (optionsToLoad === undefined) {
-		// something wrong with select
-		log.e("Failed to update preset.");
-		return;
-	}
-	// update preset values in storage
-	setNotice("Updating...", 1000);
-	await updateCustomRuleStatusMultiple(optionsToLoad);
-	// update preset values on page
-	Object.entries(optionsToLoad).forEach(([ruleName, isOn]) => {
-		optionEls.get(ruleName).checked = isOn;
-	});
-	setNotice("Updated", 1000);
 	
 	// store this as the most recent preset
-	setCurrentPreset(presetName);
-	// storage listener in service worker will update the content scripts
+	// and do want to set the options
+	await setPresetTo(presetName, true);
+
+	setNotice("Updated preset", 1000);
 });
+
+/**
+ * Sets the current preset to {@param presetName}
+ * both visually in the foreground
+ * and actually in the background (storageArea)
+ * 
+ * Will update the options list visually
+ * if {@param updateOptions} === true
+ * 
+ * @remarks
+ * storage listener in service worker will update the content scripts
+ */
+async function setPresetTo(presetName: string, updateOptions = true) {
+	await setCurrentPreset(presetName);
+	// now that it is done:
+	presetsEl.value = presetName;
+
+	if (updateOptions) {
+		// load rule settings
+		await refreshOptionValues(presetName);
+	}
+}
+/**
+ * Visually updates the option values
+ * to be the stored preset values
+ */
+async function refreshOptionValues(presetName: string) {
+	if (presetName !== CUSTOM_PRESET) {
+		log.d(`Refreshing the options to match the new preset "${presetName}"`);
+		setOptionValues(presets[presetName]);
+	} else {
+		log.d(`Refreshing the options to match the new custom preset`);
+		// show custom preset options
+		setOptionValues(await getAllCustomRuleStatuses());
+	}
+}
 
 // todo future option to save new presets
 
@@ -96,37 +138,39 @@ const optionEls = new Map<string, HTMLInputElement>();
 const optionHeadingEls = new Map<string, HTMLElement>();
 /**
  * Creates a checkbox option
+ * 
+ * Labels it with the innermost past
+ * (part after the final /)
  */
-function createCheckboxOption(addToEl: HTMLElement, options: { label: string, initialValue?: boolean, details?: string, url?: string, callback?: (isChecked: boolean) => void }) {
+function createCheckboxOption(addToEl: HTMLElement, options: { fullName: string, initialValue?: boolean, details?: string, url?: string, callback: (isChecked: boolean) => Promise<void> }) {
+	const label = options.fullName.substring(options.fullName.lastIndexOf("/") + 1); // even works if index === -1 !
 	const wrapperEl = document.createElement("div");
 	const labelEl = document.createElement("label");
 	const inputEl = document.createElement("input");
 	inputEl.type = "checkbox";
-	inputEl.name = options.label;
-	labelEl.setAttribute("name", options.label);
+	inputEl.name = label;
+	labelEl.setAttribute("name", label);
 	inputEl.checked = options.initialValue ?? false;
 	if (options.callback !== undefined) {
-		inputEl.addEventListener("input", () => {
-			// options.callback will be defined thank you very much
-			// or could put `options.callback?.(inputEl.checked);`
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-			options.callback!(inputEl.checked);
+		inputEl.addEventListener("input", async () => {
+			await options.callback(inputEl.checked);
 		});
 	}
-	const textEl = document.createTextNode(options.label);
+	const textEl = document.createTextNode(label);
 	labelEl.appendChild(inputEl);
 	labelEl.appendChild(textEl);
 
 	wrapperEl.appendChild(labelEl);
-	if (details !== undefined) {
+	if (options.details !== undefined) {
 		const detailsEl = document.createElement("p");
-		detailsEl.textContent = details;
+		detailsEl.textContent = options.details;
+		//detailsEl.innerHTML = options.details.replace(/\n/g, "<br />");
 		detailsEl.classList.add("details");
 		wrapperEl.appendChild(detailsEl);
 	}
-	if (url !== undefined) {
+	if (options.url !== undefined) {
 		const runsOnEl = document.createElement("p");
-		runsOnEl.textContent = `Runs on ${url}`;
+		runsOnEl.textContent = `Runs on ${options.url}`;
 		runsOnEl.classList.add("runs-on");
 		wrapperEl.appendChild(runsOnEl);
 	}
@@ -135,39 +179,66 @@ function createCheckboxOption(addToEl: HTMLElement, options: { label: string, in
 	// not null because it would have thrown
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	addToEl.appendChild(wrapperEl);
-	optionEls.set(options.label, inputEl);
+	optionEls.set(options.fullName, inputEl);
 }
-function createOptionTree(options: Array<string, boolean>) {
+/**
+ * Creates an option tree
+ * from an array of tuples
+ * 
+ * Meant to be created based on a preset's entries
+ */
+function createOptionTree(options: Array<[string, boolean]>) {
 	options.forEach(([fullRuleName, value]) => {
+		const associatedRule = rules.find(rule => rule.name === fullRuleName);
+		if (associatedRule === undefined) {
+			throw new Error(`Tried to create rule ${fullRuleName} which does not exist! Canceling!`);
+		}
 		// create a nice option tree
 		const segments = fullRuleName.split("/");
 		let lastLevelEl = optionsEl;
 		for (let i = 0; i < segments.length - 1; i++) {
 			const currSegment = segments[i];
 			let currLevelEl = optionHeadingEls.get(currSegment);
-			if (currLevelEl === null) {
+			if (currLevelEl === undefined) {
 				currLevelEl = document.createElement("div");
-				currLevelEl.textContent = currSegment;
+				const sectionEl = document.createElement("div");
+				sectionEl.textContent = currSegment;
+				sectionEl.classList.add("section-title");
+				currLevelEl.appendChild(sectionEl);
 				currLevelEl.classList.add("branch");
+				currLevelEl.classList.add(`lvl-${i}`);
+				if (i > 4) {
+					log.d("Tree is more than 4 levels deep, so we don't have perfect styling for it.");
+				}
+
 				// todo add uncheck all click listener
 				lastLevelEl.appendChild(currLevelEl);
+				optionHeadingEls.set(currSegment, currLevelEl);
 			}
 			lastLevelEl = currLevelEl;
 		}
-		const ruleName = segments[segments.length - 1];
 		// find details from rule and pass to createCheckboxOption
-		const associatedRule = rules.find(rule => rule.name === fullRuleName);
-		// todo next null checks
-		createCheckboxOption(lastLevelEl, { label: ruleName, details: associatedRule.details, url: associatedRule.path, initialValue: value, callback: newValue => {
+		createCheckboxOption(lastLevelEl, { fullName: fullRuleName, details: associatedRule.description, url: squishArray(associatedRule.contentScripts.map(cs => cs.url)), initialValue: value, callback: async newValue => {
+			log.d(`Rule ${fullRuleName} was updated to ${newValue}`);
 			// update in storage
-			updateCustomRuleStatus(fullRuleName, newValue);
-			// bubble errors
-			
-			// todo auto set to CUSTOM_PRESET preset on change options
-			// and save the Custom preset to storage
+			try {
+				await updateCustomRuleStatus(fullRuleName, newValue);
+				log.d(`Updated rule in storageArea`);
+				setNotice("Saved option", 1000);
+				if (await getCurrentPreset() !== CUSTOM_PRESET) { // or could visually check on screen
+					await setPresetTo(CUSTOM_PRESET, true);
+				}
+				// else should be up to date: don't need to update
+			} catch {
+				log.crit("Failed to update option.");
+				setNotice("Failed to save option", 3000, true);
+				// todo revert their click (set el back to its previous state)
+				// and make the log an `e` instead
+			}
 		}});
 	});
 }
+// "All Off" should have all the options to tree from
 createOptionTree(Object.entries(presets["All Off"]));
 
 /**
@@ -175,23 +246,31 @@ createOptionTree(Object.entries(presets["All Off"]));
  * visually updating the rule checkboxes and preset value
  */
 async function loadAllSavedOptions() {
-	throw new Error("Not implemented");
-	// Object.keys(presets["All Off"]) should always exist and have everything listed
-	const rules = await getAllRuleStatuses();
+	// load preset setting
+	const currentPreset = await getCurrentPreset() ?? DEFAULT_PRESET;
+	await refreshOptionValues(currentPreset);
+	log.d(`Setting preset el value to the current preset ${currentPreset}`);
+	presetsEl.value = currentPreset;
+}
+
+function setOptionValues(rules: Record<string, boolean | null>) {
 	for (const [key, value] of Object.entries(rules)) {
 		const associatedOptionEl = optionEls.get(key);
-		if (associatedOptionEl === null) {
+		if (associatedOptionEl === undefined) {
 			throw new Error(`No optionEl for option ${key}`);
 		}
 		if (value !== null) {
 			associatedOptionEl.checked = value;
 		} else {
-			// default: use preset ?
-			// todo
-			//associatedOptionEl.checked = false;
+			// this should only happend on a custom preset with a bad pull
+			// default: set to false
+			log.w(`Could not find an value for the key ${key} when trying to visually set the option values. Defaulting to false`);
+			//associatedOptionEl.checked = false; // default is already false
 		}
 	}
-	// if mismatch of more optionEls... oh well
+	// if mismatch of more optionEls than listed... oh well
 }
 
 document.addEventListener("DOMContentLoaded", loadAllSavedOptions);
+
+document.body.appendChild(downloadLogFileButton());

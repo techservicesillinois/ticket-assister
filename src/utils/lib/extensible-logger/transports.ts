@@ -1,6 +1,7 @@
-import { log } from "utils/logger";
 import { LogLevel, readableLogLevel } from "./loggers";
 import * as browser from "webextension-polyfill";
+import { getAllCustomRuleStatuses, getCurrentPreset } from "utils/rules/storage";
+import { CUSTOM_PRESET } from "../../../rules/presets";
 
 /**
  * A method of delivering data to the user
@@ -54,11 +55,14 @@ export class TransportStorage implements Transport {
     /**
      * Gets the data stored in the log file
      * 
-     * @throws an {@link Error} 
+     * @throws an {@link Error}
+     * 
+     * @internalRemarks
+     * This must be public in order for this.generateLogFileURI to be publicably usable
      */
     async #getData(): Promise<Array<string>> {
         const rawData = await this.#STORAGE_AREA.get(this.#STORAGE_NAME);
-        const parsedData = JSON.parse(rawData[this.#STORAGE_NAME]);
+        const parsedData = rawData[this.#STORAGE_NAME];
         if (parsedData instanceof Array) { //Array<string>
             return parsedData;
         }
@@ -99,9 +103,18 @@ export class TransportStorage implements Transport {
      * Generates a log file
      * 
      * @throws if there is an error parsing the log data
-     * @todo
      */
     async generateLogFileURI() {
+        // add last-minute data
+        try {
+            const cp = await getCurrentPreset();
+            this.handleMessage(`Current preset is ${cp}`, LogLevel.Debug);
+            if (cp === CUSTOM_PRESET) {
+                this.handleMessage(`Custom preset statuses are ${await getAllCustomRuleStatuses()}`, LogLevel.Debug);
+            }
+        } catch {
+            console.error("Failed to add current preset data to log file.");
+        }
         const logData: Array<string> = await (async () => {
             try {
                 return await this.#getData();
@@ -111,6 +124,13 @@ export class TransportStorage implements Transport {
         })();
         const stringRepresentation = logData.reduce((prev, curr) => prev += `${curr}\n`, "");
         return `data:text/plain;charset=utf-8,${encodeURIComponent(stringRepresentation)}`;
+    }
+    /**
+     * A publically callable version of {@link generateLogFileURI}
+     * available in different contexts.
+     */
+    pubGenerateLogFileURI() {
+        return this.generateLogFileURI.bind(this);
     }
 }
 // todo make TransportBeacon: sends data to log collector slipstream

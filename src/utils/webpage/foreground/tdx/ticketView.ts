@@ -5,6 +5,11 @@ import { log } from "utils/logger";
 import { TICKETS_BASE_URL, getRequestor } from "./shared";
 import { openWindowWithPost } from "utils/postNewWindow";
 import { FetchErrorMessage, getDomFromText, verifyFetchSuccess } from "utils/fetch";
+import { listener } from "../../link/ticket";
+import { receiveMessages, PIPELINE_CEREBRO_TO_TICKET } from "../../link/interface";
+import { squishArray } from "utils/stringParser";
+import { generateFlagSummaryEl } from "../cerebro";
+import { BASE_URL } from "config";
 /**
  * Gets the TDX ticket view URL
  * 
@@ -103,7 +108,7 @@ function grayOutAction(actionTitle: string) {
 		throw new DomParseError();
 	}
 	const innerLink = actionEl.children[0]; // actionEl.querySelector("a");
-	if (innerLink === null || !(innerLink instanceof HTMLElement)) {
+	if (innerLink === undefined || !(innerLink instanceof HTMLElement)) {
 		throw new DomParseError();
 	}
 	//actionEl.setAttribute("disabled", "true");
@@ -111,16 +116,21 @@ function grayOutAction(actionTitle: string) {
 	//const prevLink = innerLink.getAttribute("href");
 	//const prevDataToggle = innerLink.getAttribute("data-toggle");
 	// clear out
-	const fakeOutEl = <HTMLElement>actionEl.cloneNode(true);
-	const fakeOutLinkEl = <HTMLElement>fakeOutEl.children[0];
+	const fakeOutEl0 = <HTMLElement>actionEl.cloneNode(true);
+	const fakeOutLinkEl0 = <HTMLElement>fakeOutEl0.children[0]; // this will exist because it does on actionEl
 	// our decoy will have removed attributes and event listeners
-	actionEl.parentElement?.insertBefore(fakeOutEl, actionEl);
+	actionEl.parentElement?.insertBefore(fakeOutEl0, actionEl);
 	// this gets rid of most functionality
-	fakeOutEl.removeAttribute("onclick");
+	fakeOutEl0.removeAttribute("onclick");
 	// this gets rid of add to work and unassign functionality
-	fakeOutLinkEl.removeAttribute("href");
+	fakeOutLinkEl0.removeAttribute("href");
+	fakeOutLinkEl0.removeAttribute("onclick");
 	// this gets rid of add to workspace functionality
-	fakeOutEl.removeAttribute("data-toggle");
+	fakeOutLinkEl0.removeAttribute("data-toggle");
+	// now need to re-clone
+	const fakeOutEl = <HTMLElement>fakeOutEl0.cloneNode(true);
+	const fakeOutLinkEl = <HTMLElement>fakeOutEl.children[0];  // this will exist because it does on fakeOutEl0
+	fakeOutEl0.replaceWith(fakeOutEl);
 	const deactivateLink = () => {
 		stylizeGrayedOut(fakeOutLinkEl);
 		actionEl.style.display = "none";
@@ -202,6 +212,7 @@ export function grayOutActions(actionTitles: Array<string>) {
 	if (failedToGrayOut.length > 0) {
 		throw new Error(`Failed to gray out actions: ${failedToGrayOut.reduce((accum, curr) => `${accum}, ${curr}`, "").slice(2)}`);
 	}
+	log.i(`Grayed out ${actionTitles.length} actions`);
 }
 
 /**
@@ -219,7 +230,7 @@ export function collapseDetailsExceptFor(idsOfDetailsToKeep: Array<string>) {
 		throw new DomParseError();
 	}
 	const detailsInner = detailsOuter.children[1]; // #divDetails > div
-	if (detailsInner === null || !(detailsInner instanceof HTMLElement)) {
+	if (detailsInner === undefined || !(detailsInner instanceof HTMLElement)) {
 		throw new DomParseError();
 	}
 	detailsInner.querySelectorAll<HTMLDivElement>("div.disp-group").forEach(detailEl => {
@@ -290,9 +301,9 @@ export function collapseDetailsExceptFor(idsOfDetailsToKeep: Array<string>) {
  * @todo search in ticket comments and details for a NetID
  * if not present in the requestor's email
  */
-function getClientNetID(): string | null {
+export function getClientNetID(): string | null {
 	const emailField = getRequestorFieldDetails().children[1];
-	if (emailField !== null && emailField.textContent !== null) {
+	if (emailField !== undefined && emailField.textContent !== null) {
 		return netIDFromEmail(emailField.textContent.trim()); // will be null if not a U of I email
 	}
 	return null;
@@ -304,7 +315,7 @@ function getClientNetID(): string | null {
  */
 function getRequestorFieldPanel() {
 	const requestorFieldEl = document.querySelector(".panel-person-card .media");
-	if (requestorFieldEl === null) {
+	if (requestorFieldEl === null || !(requestorFieldEl instanceof HTMLElement)) {
 		throw new DomParseError();
 	}
 	return requestorFieldEl;
@@ -337,6 +348,25 @@ export function addCopyNetIDButton() {
 	const netID = getClientNetID();
 	const copyButton = document.createElement("button");
 	copyButton.textContent = "Copy NetID";
+	copyButton.style.transition = "color 0.4s ease";
+	let timeout: NodeJS.Timeout | null = null;
+	const SHOW_FOR_MS = 1200;
+	const setMessage = (message: string) => {
+		if (timeout !== null) {
+			// must wait
+			return;
+		}
+		const prevText = copyButton.textContent;
+		copyButton.textContent = message;
+		setTimeout(() => {
+			copyButton.style.color = "#bce8f1"; // hide
+		}, SHOW_FOR_MS - 500);
+		timeout = setTimeout(() => {
+			copyButton.style.color = "#000"; // show
+			copyButton.textContent = prevText;
+			timeout = null;
+		}, SHOW_FOR_MS);
+	};
 	copyButton.setAttribute("type", "button");
 	/*
 	position: absolute;
@@ -360,8 +390,14 @@ export function addCopyNetIDButton() {
 		copyButton.style.cursor = "pointer";
 		copyButton.addEventListener("click", async () => {
 			navigator.clipboard.writeText(netID)
-				.then(() => log.i(`Successfully copied ${netID} to clipboard`),
-					() => log.e(`Failed to copy ${netID} to clipboard`));
+				.then(() => {
+					log.i(`Successfully copied ${netID} to clipboard`)
+					setMessage("Copied!");
+				},
+				() => {
+					log.e(`Failed to copy ${netID} to clipboard`)
+					setMessage("Failed to copy");
+				});
 		});
 	}
 }
@@ -381,6 +417,18 @@ export function addCopyNetIDButton() {
 export function addOpenToolsButtons() {
 	const requestorField = getRequestorFieldPanel();
 	const netID = getClientNetID();
+	const buttonsWrapper = document.createElement("div");
+	/*buttonsWrapper.style.display = "flex";
+	buttonsWrapper.style.flexDirection = "row";
+	buttonsWrapper.style.alignItems = "stretch";*/
+	buttonsWrapper.style.display = "table-cell";
+	buttonsWrapper.style.paddingLeft = "3em";
+	const buttonsWrapperInner = document.createElement("div");
+	buttonsWrapperInner.style.display = "flex";
+	buttonsWrapperInner.style.flexDirection = "column";
+	buttonsWrapperInner.style.alignItems = "stretch";
+	buttonsWrapperInner.style.gap = "0.5em";
+
 	const buttonIcard = document.createElement("button");
 	buttonIcard.textContent = "i-card";
 	buttonIcard.setAttribute("type", "button");
@@ -393,10 +441,6 @@ export function addOpenToolsButtons() {
 	//buttonIsa.textContent = "ISA";
 	//buttonIsa.setAttribute("type", "button");
 	//buttonIsa.className = "btn btn-info";
-
-	requestorField.appendChild(buttonIcard);
-	//requestorField.appendChild(buttonCerebro);
-	//requestorField.appendChild(buttonIsa);
 	if (netID === null) {
 		// could just open the tool without NetID but nah
 		// gray out buttons
@@ -439,6 +483,11 @@ export function addOpenToolsButtons() {
 				"BNT_SEARCH": "Search",
 		});*/
 	}
+	buttonsWrapperInner.appendChild(buttonIcard);
+	//buttonsWrapperInner.appendChild(buttonCerebro);
+	//buttonsWrapperInner.appendChild(buttonIsa);
+	buttonsWrapper.appendChild(buttonsWrapperInner);
+	requestorField.appendChild(buttonsWrapper);
 }
 
 /**
@@ -449,7 +498,7 @@ export function addOpenToolsButtons() {
  * Uses the same recent tickets that are seen in the ticket edit page
  */
 export function addRecentRequestorTickets(): Promise<void> {
-	return fetch(`https://help.uillinois.edu/TDNext/Apps/40/Tickets/Requestor?requestorUid=${getRequestor().id}&FormId=107`)
+	return fetch(`${BASE_URL}/Apps/40/Tickets/Requestor?requestorUid=${getRequestor().id}&FormId=107`)
 		.then(res => {
 			if (!res.ok) {
 				throw new Error("Res not ok");
@@ -476,4 +525,203 @@ export function addRecentRequestorTickets(): Promise<void> {
 				rightColumn.appendChild(recentRequests);
 			}
 		});
+}
+
+/**
+ * Sets up TDX Ticket View's message listener
+ * for communication with Cerebro
+ */
+export function listenForMessages(onInfo: (info: Object) => void) {
+	receiveMessages(PIPELINE_CEREBRO_TO_TICKET, message => listener(message, onInfo));
+}
+
+/**
+ * Returns the element housing the Cerebro info for a client,
+ * creating it if it does not exist
+ */
+function getCerebroInfoBox() {
+	const id = "tkast-cerebro-info";
+	const existingEl = document.querySelector(`#${id}`);
+	if (existingEl && existingEl instanceof HTMLElement) {
+		return existingEl;
+	}
+	const createdEl = document.createElement("div");
+	createdEl.id = id;
+	const requestorFieldPanel = getRequestorFieldPanel();
+	if (requestorFieldPanel.parentElement === null) {
+		// for the 0.1% of the time that this is the case
+		log.e("Failed to get cerebro info box: requestorFieldPanel's parent is null");
+	} else {
+		requestorFieldPanel.parentElement.appendChild(createdEl);
+	}
+	return createdEl;
+}
+/**
+ * Notes that the client's Cerebro info is being serached up
+ * below the requestor field
+ */
+export function setCerebroInfoLoading() {
+	const cerebroInfoBox = getCerebroInfoBox();
+	cerebroInfoBox.textContent = "Getting user info...";
+	cerebroInfoBox.style.color = "#0071c5";
+}
+/**
+ * Notes that the client's Cerebro info will not be found
+ * (due to not detecting a NetID or UIN)
+ * below the requestor field
+ */
+export function setCerebroInfoIdle() {
+	const cerebroInfoBox = getCerebroInfoBox();
+	cerebroInfoBox.textContent = "No user info to display.";
+	cerebroInfoBox.style.color = "#a46800";
+	cerebroInfoBox.style.fontWeight = "300";
+}
+/**
+ * Notes that the client's Cerebro info could not be found
+ * below the requestor field
+ */
+export function setCerebroInfoError() {
+	const cerebroInfoBox = getCerebroInfoBox();
+	cerebroInfoBox.textContent = "Failed to get user info.";
+	cerebroInfoBox.style.color = "#c50000";
+	cerebroInfoBox.style.fontWeight = "600";
+}
+/**
+ * Adds the client's Cerebro info
+ * below the requestor field
+ */
+export function addCerebroInfo(info: Object) {
+	const cerebroInfoBox = getCerebroInfoBox();
+	cerebroInfoBox.style.border = "2px dotted #000033";
+	cerebroInfoBox.style.padding = "1em";
+
+	// todo use this stuff:
+	const typesEl = document.createElement("p");
+	if (info.key.types.length === 0) {
+		typesEl.textContent = "[person/phone]";
+	} else {
+		typesEl.textContent = squishArray(info.key.types);
+	}
+	typesEl.style.margin = "0.25em 0";
+	const rolesEl = document.createElement("p");
+	rolesEl.textContent = squishArray(info.key.roles);
+	rolesEl.style.fontSize = "0.75em";
+	typesEl.style.margin = "0";
+
+	
+	const flagSummaryEl = generateFlagSummaryEl(info.red, info.yellow);
+	flagSummaryEl.style.float = "right";
+	// todo make this not an override
+	flagSummaryEl.children[1]!.style.right = "0";
+
+	/*const redFlagsEl = document.createElement("div");
+	redFlagsEl.style.backgroundColor = "#ffabab";
+	// todo: red flag icon
+	info.red.forEach(redFlag => {
+		const redFlagNoticeEl = document.createElement("p");
+		const locationEl = document.createElement("span");
+		locationEl.textContent = redFlag.location;
+		locationEl.style.fontSize = "0.75em";
+		const connectingEl = document.createTextNode(": ");
+		const noteEl = document.createElement("span");
+		noteEl.textContent = redFlag.note;
+		noteEl.style.fontWeight = "700";
+
+		redFlagNoticeEl.appendChild(locationEl);
+		redFlagNoticeEl.appendChild(connectingEl);
+		redFlagNoticeEl.appendChild(noteEl);
+		redFlagsEl.appendChild(redFlagNoticeEl);
+	});
+	const yellowFlagsEl = document.createElement("div");
+	yellowFlagsEl.style.backgroundColor = "#fff4ab";
+	yellowFlagsEl.style.fontSize = "0.75em";
+	// todo: yellow flag icon
+	info.yellow.forEach(yellowFlag => {
+		const yellowFlagNoticeEl = document.createElement("p");
+		const locationEl = document.createElement("span");
+		locationEl.textContent = yellowFlag.location;
+		locationEl.style.fontSize = "0.75em";
+		const connectingEl = document.createTextNode(": ");
+		const noteEl = document.createElement("span");
+		noteEl.textContent = yellowFlag.note;
+
+		yellowFlagNoticeEl.appendChild(locationEl);
+		yellowFlagNoticeEl.appendChild(connectingEl);
+		yellowFlagNoticeEl.appendChild(noteEl);
+		yellowFlagsEl.appendChild(yellowFlagNoticeEl);
+	});*/
+
+	cerebroInfoBox.textContent = ""; // clear out
+	cerebroInfoBox.appendChild(flagSummaryEl);
+	cerebroInfoBox.appendChild(typesEl);
+	cerebroInfoBox.appendChild(rolesEl);
+	//cerebroInfoBox.appendChild(redFlagsEl);
+	//cerebroInfoBox.appendChild(yellowFlagsEl);
+}
+
+/**
+ * The amount of time to wait before trying to get the WYSIWYG El again
+ * 
+ * Will wait a total of `TRY_AGAIN_MS` * 3 ms max.
+ */
+const TRY_AGAIN_MS = 400;
+/**
+ * Gets the attachments element
+ * 
+ * @internalRemarks
+ * Must be complete not interactive
+ * because the attachment el data lazy loads
+ * 
+ * Note: before being "complete", is an el with no children
+ * 
+ * @todo abstract with {@link getWysiwygEl}
+ */
+export async function getAttachmentsEl(): Promise<Element> {
+	return new Promise((res, rej) => {
+		let tries = 0;
+		const action = () => {
+			const attachmentsEl = document.querySelector("#divAttachments");
+			if (attachmentsEl === null || attachmentsEl.children.length !== 1 || attachmentsEl.children[0].classList.contains("WhiteOut")) {
+				// still loading (hopefully)
+				if (tries++ < 3) {
+					setTimeout(action, TRY_AGAIN_MS);
+				} else {
+					rej(new DomParseError());
+				}
+			} else {
+				res(attachmentsEl);
+			}
+		};
+		if (document.readyState === "complete") {
+			action();
+		} else {
+			// window.onDOMContentLoaded fires when all deferred scripts have executed (document.readyState === "interactive")
+			// window.onload fires after everything, including stylesheets, images, and iframes (document.readyState === "complete")
+			window.addEventListener("load", action, { once: true });
+		}
+	});
+}
+/**
+ * Returns the number of attachments
+ * on the ticket
+ * 
+ * @remarks
+ * Is async in case the attachments el has not yet loaded
+ */
+export async function getAttachmentCount(): Promise<number> {
+	const attachmentsEl = await getAttachmentsEl();
+	const attachmentsCountEl = attachmentsEl.querySelector(".js-attachments-count");
+	const attachmentsCount = Number(attachmentsCountEl?.textContent);
+	if (attachmentsCountEl !== null && !Number.isNaN(attachmentsCount)) {
+		return attachmentsCount;
+	} else {
+		// fallback
+		const attachmentsList = attachmentsEl.querySelector(".js-attachments-body");
+		if (attachmentsList !== null && attachmentsList.children.length >= 2) {
+			return attachmentsList.children.length - 2;
+		} else {
+			// out of options
+			throw new DomParseError();
+		}
+	}
 }

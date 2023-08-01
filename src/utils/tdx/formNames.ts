@@ -80,7 +80,7 @@ export enum Status {
 	"Cancelled" = "122",
 	"On Hold" = "123",
 	"Reopened" = "138",
-	"Awaiting Customer Response" = "189",
+	"Awaiting Customer Response" = "187",
 }
 /**
  * Returns a {@link Status} based on the status's value

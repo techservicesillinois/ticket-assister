@@ -12,7 +12,7 @@ export const getUrl = (ticketID: TicketID) => `${TICKETS_BASE_URL}/Edit?TicketID
 
 /**
  * Updates the Person Requiring Service field in the update service request form
- * `window.location.href` must be like BASE_URL/TDNext/Apps/40/Tickets/Edit?TicketID=X and ready
+ * `window.location.href` must be like BASE_URL/Apps/40/Tickets/Edit?TicketID=X and ready
  * @throws a {@link DomParseError} if the document is invalid (if not on the proper page)
  * 
  * @remarks
@@ -24,6 +24,8 @@ export const getUrl = (ticketID: TicketID) => `${TICKETS_BASE_URL}/Edit?TicketID
  * and also verify on proper page
  * and ensure assertions (`!`s) are safe
  * (try-catch them with a nice error like FetchErrorMessage.UNEXPECTED_RESPONSE)
+ * 
+ * > use jquery and select2 in window
  */
 export function setRequestorForm(requestor: TDXPerson) {
     /*
@@ -50,7 +52,7 @@ export function setRequestorForm(requestor: TDXPerson) {
         const clicked = new Event("mousedown");
         // > .select2-result > .select2-result-label > select2-result-subcaption
         // todo verify resultsBox.children[0].querySelector("select2-result-subcaption") == email;
-        resultsBox.children[0].dispatchEvent(clicked);
+        resultsBox.children[0]?.dispatchEvent(clicked);
         // todo: this isn't firing because it is not an isTrusted Event !
         // try running it in a chrome extension content script ?
         // or chrome.debugger, or chrome.scripting.executeScript()
