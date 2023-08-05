@@ -68,7 +68,10 @@ function onlyFileFlag() {
     const total = Object.keys(contentScripts).length;
     //Object.values(contentScripts).forEach(filePath => {
     for (const [entryName, filePath] of Object.entries(contentScripts)) {
-        if (!["contentScripts/tdx/ticket/view/cs31", "contentScripts/cerebro/cs32"].includes(entryName)) continue; // todo dev
+        /*if (!["cs31", "cs32"].includes(entryName.substring(entryName.lastIndexOf("/")+1))) {
+            console.warn(`SKIPPING ${entryName}`);
+            continue; // dev
+        }*/
         console.log(`Compiling [${++completed}/${total}] ${filePath}`);
         await build({
             mode: process.env.NODE_ENV === "development" ? "development" : undefined, // use default: production

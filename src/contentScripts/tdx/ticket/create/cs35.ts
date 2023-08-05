@@ -1,5 +1,5 @@
 // <rule name="TDX/Ticket/Create/Hide additional contacts">
-import { formChangeListen, getAdditionalContactsEl } from "utils/webpage/foreground/tdx/ticketCreate";
+import { formChangeListen, getAdditionalContactsEl, getFormSelectValue, quickSelectOptions, supportedFormIsSelected } from "utils/webpage/foreground/tdx/ticketCreate";
 import { collapseEl } from "utils/webpage/foreground/tdx/shared";
 import { log } from "utils/logger";
 
@@ -25,7 +25,12 @@ formChangeListen(() => {
         }
         lastHideEl = collapseEl(getAdditionalContactsEl(), "Additional Contacts", true);
     } catch (e) {
-        log.e(`Failed to collapse additional contacts: ${e.message}`);
+        const faVal = getFormSelectValue();
+        if (supportedFormIsSelected() && faVal !== quickSelectOptions.find(qso => qso.label === "Classtech Problem Report")?.value) {
+            log.e(`Failed to collapse additional contacts: ${e instanceof Error ? e.message : e}`);
+        } else {
+            log.d(`Failed to collapse additional contacts on unsupported form: ${e instanceof Error ? e.message : e}`);
+        }
     }
 });
 

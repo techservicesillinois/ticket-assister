@@ -92,7 +92,6 @@ export function listener(message: Object): TdxCerebroSchema {
 		log.e(`Failed to receive message: ${e}`);
 	}
 	log.e(`Reply was not sent; sending error uncaught`);
-	console.log(message); // todo log
 	// should have responded by now
 	return {
 		status: "error",

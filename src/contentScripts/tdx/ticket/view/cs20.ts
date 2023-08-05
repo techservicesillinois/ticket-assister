@@ -24,9 +24,16 @@ if (detailsElParent !== null) {
     watchDOMChanges(detailsElParent, () => {
         const now = Date.now();
         if (now - lastUpdated > THROTTLE_TIME_MS) {
-            log.d("Collapsing details after update");
-            collapse();
-            lastUpdated = now;
+            if (document.querySelector("#tkast-details-collapse") === null) {
+                log.d("Collapsing details after update");
+                // TODO: toggling flag hides SRA from the mini and expanded details
+                collapse();
+                lastUpdated = now;
+            } else {
+                // probably just toggled the collapse by clicking it
+                // and this was not a forced refresh
+                log.d("Skipping collapse: collapse button already exists");
+            }
         }
     });
 } else {

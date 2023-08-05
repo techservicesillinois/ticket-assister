@@ -22,7 +22,7 @@ browser.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
             }
         } catch (error) {
             // probably no tab active
-            log.i(`Failed to send response from ${senderReadable} to Cerebro: ${error}`);
+            log.i(`Failed to send message from ${senderReadable} to Cerebro: ${error}`);
             log.d(`Sending no signal response to ${senderReadable}`);
             // let them know that it failed to send
             // so that they can spawn a new Cerebro tab
@@ -48,7 +48,7 @@ browser.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
         } catch (error) {
             // probably bad
             // maybe the closed the tab
-            log.e(`Failed to send response from ${senderReadable} to Cerebro: ${error}`);
+            log.e(`Failed to send message from ${senderReadable} to Cerebro: ${error}`);
             log.d(`Sending no signal response to ${senderReadable}`);
             try {
                 return ({
@@ -77,6 +77,9 @@ async function messageUrl(url: string, message: Object): Promise<any> {
     // could try and query by windowId or openerTabId
     // or title :)
     const tabs = await browser.tabs.query({ url });
+    if (tabs.length === 0) {
+        throw new Error("No tabs with that URL to use");
+    }
     // filter tabs: 
     const tabToUse = findBestTab(tabs);
     if (tabToUse === undefined || tabToUse.id === undefined) {

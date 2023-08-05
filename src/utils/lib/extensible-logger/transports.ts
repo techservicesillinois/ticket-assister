@@ -1,6 +1,6 @@
 import { LogLevel, readableLogLevel } from "./loggers";
 import * as browser from "webextension-polyfill";
-import { getAllCustomRuleStatuses, getCurrentPreset } from "utils/rules/storage";
+import { getCurrentPreset } from "utils/rules/storage";
 import { CUSTOM_PRESET } from "../../../rules/presets";
 
 /**
@@ -50,9 +50,12 @@ export class TransportConsole implements Transport {
         // this should be defined
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const stackTraceStr = new Error().stack!.substring(13);
-        const stackTraceArr = stackTraceStr.split("at").map(frame => frame.trim()).map(frame => frame.substring(frame.indexOf("/", "chrome-extension://".length+1)+1));
-        // [0] is TransportConsole.handleMessage, [1] is logger, [2] is Set.forEach, [3] is stringParser
-        console.log(`%c[${readableLogLevel(b)}]%c {${stackTraceArr[4]}} ${a}`, getLogLevelStyling(b), "");
+        const stackTraceArr = stackTraceStr.split("at ").map(frame => frame.trim());
+        // [0] is TransportConsole.handleMessage, [1] is logger
+        const pathOfFile = stackTraceArr.find(stackStr => stackStr.indexOf(".js") !== -1);
+        const stackToShow = pathOfFile?.substring(pathOfFile.indexOf("/", pathOfFile.indexOf("chrome-extension://")+"chrome-extension://".length)+1)
+            ?? stackTraceArr[2];
+        console.log(`%c[${readableLogLevel(b)}]%c {${stackToShow}} ${a}`, getLogLevelStyling(b), "");
     }
     validationError() {
         // console always works
@@ -112,10 +115,13 @@ export class TransportStorage implements Transport {
         // this should be defined
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const stackTraceStr = new Error().stack!.substring(13);
-        const stackTraceArr = stackTraceStr.split("at").map(frame => frame.trim()).map(frame => frame.substring(frame.indexOf("/", "chrome-extension://".length+1)+1));
-        // [0] is TransportConsole.handleMessage, [1] is logger, [2] is Set.forEach, [3] is stringParser
+        const stackTraceArr = stackTraceStr.split("at ").map(frame => frame.trim());
+        // [0] is TransportConsole.handleMessage, [1] is logger
+        const pathOfFile = stackTraceArr.find(stackStr => stackStr.indexOf(".js") !== -1);
+        const stackToShow = pathOfFile?.substring(pathOfFile.indexOf("/", pathOfFile.indexOf("chrome-extension://")+"chrome-extension://".length)+1)
+            ?? stackTraceArr[2];
         const formattedDate = new Date().toLocaleDateString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, day: "2-digit", month: "2-digit", year: "2-digit" });
-        logData.push(`${formattedDate} {${stackTraceArr[4]}} [${readableLogLevel(b)}]\t${a}`);
+        logData.push(`${formattedDate} {${stackToShow}} [${readableLogLevel(b)}]\t${a}`);
         if (logData.length > this.#STORAGE_LINES) {
             logData.shift();
         }

@@ -1,5 +1,6 @@
 // <rule name="TDX/Ticket/Create/Don't notify requestor">
-import { getNotifyRequestorInputEl, formChangeListen } from "utils/webpage/foreground/tdx/ticketCreate";
+import { getNotifyRequestorInputEl, formChangeListen, supportedFormIsSelected } from "utils/webpage/foreground/tdx/ticketCreate";
+import { log } from "utils/logger";
 
 
 // this gets reset every time
@@ -8,6 +9,10 @@ formChangeListen(() => {
     try {
         getNotifyRequestorInputEl().checked = false;
     } catch (e) {
-        log.e(`Failed to uncheck notify requestor: ${e.message}`);
+        if (supportedFormIsSelected()) {
+            log.e(`Failed to uncheck notify requestor: ${e.message}`);
+        } else {
+            log.d(`Failed to uncheck notify requestor on unsupported form: ${e.message}`);
+        }
     }
 });

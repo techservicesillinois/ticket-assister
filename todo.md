@@ -1,18 +1,9 @@
 # Todo
 
-## Before launch
-
-- patches:
-    - cs38.ts:13 --- auto take is not working (Closed, auto-view)
-        - maybe getTicketDatumsRecursively isn't loaded
-    - ticket/view: pressing showAll causes madness
-        - likely due to detecting DOM changes... find a way to ignore this (e.g. make a div#tkast-expand and have DOM listener check for this
-
-- update manifest's listed version to 1.0.0
-
 ## Next release
 
 1.1.0
+Accessible for others on help.uillinois.edu
 
 - **glob Apps/X/Tickets to allow things besides U of I - Main (still in UIUC help.uillinois)**
     - config.ts, middleman.ts, person.ts, **ticketActions.ts**, shared.ts, ticketEdit.ts, ticketView.ts
@@ -20,7 +11,7 @@
 
 ## Backlog
 
-- add a consistent level of logging throughout
+- ensure a consistent level of logging throughout
 
 - add `@src/*`, `@utils/*`, `@config`, `@rules/*` import paths
     - fix src/rules/* not allowing absolute imports (eslint)

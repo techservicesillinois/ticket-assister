@@ -3,8 +3,6 @@ import { DomParseError } from "utils/errors";
 import { netIDFromEmail } from "utils/tdx/types/person";
 import type { ITDXPerson } from "utils/tdx/types/person";
 import type { AtLeast } from "utils/types";
-import { getSaveButton } from "./ticketEdit";
-import { log } from "utils/logger";
 
 /**
  * The amount of time to wait before trying to get the WYSIWYG El again
@@ -331,24 +329,4 @@ export function doPostBack(eventTarget, eventArgument) {
 	} else {
 		return false;
 	}
-}
-
-/**
- * Adds submit on ctrl enter handlers
- * to the body and WYSIWYG els,
- * catching errors and logging them.
- */
-export function addSubmitOnCtrlEnterHandlers() {
-	try {
-		submitOnCtrlEnter(document.body, getSaveButton());
-	} catch (e) {
-		log.e(`Failed to add submit on Ctrl+Enter listener to document body: ${e instanceof Error ? e.message : e}`);
-	}
-	(async () => {
-		try {
-			submitOnCtrlEnter(await getWysiwygBody(), getSaveButton());
-		} catch (e) {
-			log.e(`Failed to add submit on Ctrl+Enter listener to WYSIWYG body: ${e instanceof Error ? e.message : e}`);
-		}
-	})();
 }

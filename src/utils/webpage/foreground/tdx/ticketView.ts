@@ -251,6 +251,7 @@ export function collapseDetailsExceptFor(idsOfDetailsToKeep: Array<string>) {
 	const elsToHide = detailEls.filter(el => !idsOfDetailsToKeep.includes(el.id));
 	// add dropdown to toggle
 	const showDetailsToggle = document.createElement("div");
+	showDetailsToggle.id = "tkast-details-collapse";
 	const icon = document.createElement("i");
 	const text = document.createElement("span");
 	icon.className = "fa fa-lg";

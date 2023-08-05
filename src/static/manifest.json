@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "Ticket Assister",
+    "name": "Ticket Assister for TeamDynamix",
     "description": "Helping you handle TDX tickets more efficiently.",
-    "version": "0.0.1",
+    "version": "1.0.0",
 	"icons": {
 		"16": "img/icon-light-16.png",
 		"48": "img/icon-light-48.png",

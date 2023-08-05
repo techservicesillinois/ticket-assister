@@ -66,6 +66,17 @@ function getFormSelectEl() {
 	}
 	return formSelectEl;
 }
+/**
+ * Returns the value of the form select
+ * or null if it could not be found
+ */
+export function getFormSelectValue() {
+	try {
+		return getFormSelectEl().value;
+	} catch {
+		return null;
+	}
+}
 
 /**
  * Adds an event listener for when the form id was changed
@@ -114,6 +125,13 @@ export function formChangeListen(listener: () => void) {
  * And we need to pass this id.
  * All we need to do is run `window.$("#FormID").select2("val", id).trigger("change");`
  * Here we go...
+ * 
+ * jquery.trigger("change"); = document.querySelector("#FormID").dispatchEvent(new Event("change"));
+ * but no known substitute to qjuery.select2()
+ * 
+ * @todo KNOWN ISSUE:
+ * on hard reload, the form will be set
+ * but not updated (i.e. a new "change" event is needed to be called)
  */
 export function setFormValue(id: string) {
 	beaconSetFormValue(id);
@@ -230,4 +248,15 @@ export function getNotifyRequestorInputEl() {
 		throw new DomParseError();
 	}
 	return el;
+}
+
+/**
+ * @returns if the current form is one of the supported forms
+ * listed in {@link quickSelectOptions}
+ * 
+ * Will **not** throw.
+ */
+export function supportedFormIsSelected(): boolean {
+	const fsVal = getFormSelectValue();
+	return fsVal === null || quickSelectOptions.map(fs => fs.value).includes(fsVal);
 }

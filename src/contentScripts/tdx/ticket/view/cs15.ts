@@ -21,7 +21,8 @@ try {
 				warningMessage.style.display = "block";
 			}
 		} catch {
-			log.e("Failed to try to hide private comment waning message");
+			// may not exist. It's okay
+			log.d("Failed to try to hide private comment waning message");
 		}
 	});
 } catch (e) {
