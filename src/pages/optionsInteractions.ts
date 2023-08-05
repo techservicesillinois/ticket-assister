@@ -1,7 +1,6 @@
-// todo
 // see https://developer.chrome.com/docs/extensions/reference/storage/
 import presets, { CUSTOM_PRESET, DEFAULT_PRESET } from "../rules/presets";
-import { updateCustomRuleStatus, getAllCustomRuleStatuses, getCurrentPreset, setCurrentPreset, getCustomRuleStatus } from "utils/rules/storage";
+import { updateCustomRuleStatus, getAllCustomRuleStatuses, getCurrentPreset, setCurrentPreset, getCustomRuleStatus, updateCustomRuleStatusMultiple } from "utils/rules/storage";
 import { log } from "utils/logger";
 import rules from "../rules/rules";
 import { squishArray } from "utils/stringParser";
@@ -208,7 +207,7 @@ function createOptionTree(options: Array<[string, boolean]>) {
 				currLevelEl.classList.add("branch");
 				currLevelEl.classList.add(`lvl-${i}`);
 				if (i > 4) {
-					log.d("Tree is more than 4 levels deep, so we don't have perfect styling for it.");
+					log.w("Tree is more than 4 levels deep, so we don't have perfect styling for it.");
 				}
 
 				// todo add uncheck all click listener
@@ -222,15 +221,29 @@ function createOptionTree(options: Array<[string, boolean]>) {
 			log.d(`Rule ${fullRuleName} was updated to ${newValue}`);
 			// update in storage
 			try {
-				await updateCustomRuleStatus(fullRuleName, newValue);
-				log.d(`Updated rule in storageArea`);
-				setNotice("Saved option", 1000);
-				if (await getCurrentPreset() !== CUSTOM_PRESET) { // or could visually check on screen
-					await setPresetTo(CUSTOM_PRESET, true);
+				// the preset currently displayed on screen
+				const previousPreset = await getCurrentPreset() ?? DEFAULT_PRESET;
+				if (previousPreset === CUSTOM_PRESET) { // or could visually check on screen
+					await updateCustomRuleStatus(fullRuleName, newValue);
+					setNotice("Saved option", 1000);
+				} else {
+					// do not visually update... we are about to save
+					// could instead visually update (`await setPresetTo(CUSTOM_PRESET, true);`)
+					// after saving all custom option values
+					await setPresetTo(CUSTOM_PRESET, false);
+					// note: an alternative (and maybe better way) to do this
+					// would be to pull all the current data on screen
+					// and use that.
+					// This would also help against race conditions
+					// (e.g. clicking two boxes quickly before the save finishes)
+					const optionsToSave = presets[previousPreset];
+					optionsToSave[fullRuleName] = newValue; // should be the opposite
+					updateCustomRuleStatusMultiple(optionsToSave);
+					setNotice("Switched preset & saved option", 1000);
 				}
 				// else should be up to date: don't need to update
-			} catch {
-				log.crit("Failed to update option.");
+			} catch (e) {
+				log.crit(`Failed to update option: ${e instanceof Error ? e.message : "(unknown)"}`);
 				setNotice("Failed to save option", 3000, true);
 				// todo revert their click (set el back to its previous state)
 				// and make the log an `e` instead
@@ -274,3 +287,9 @@ function setOptionValues(rules: Record<string, boolean | null>) {
 document.addEventListener("DOMContentLoaded", loadAllSavedOptions);
 
 document.body.appendChild(downloadLogFileButton());
+
+window.onerror = err => {
+	if (err instanceof Error) {
+		log.e(`Uncaught error: ${err.message}`);
+	}
+};

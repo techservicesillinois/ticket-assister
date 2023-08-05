@@ -9,6 +9,9 @@ export const sendMessageToCerebro: (message: Object) => Promise<any> = async mes
  *
  * @remarks
  * Sends and receives JSON
+ * 
+ * @deprecated: Do not use
+ * Use cs31::onResponse instead
  */
 export function listener(message: Object, onInfo: (info: Object) => void) {
 	const parsedMessage = message;

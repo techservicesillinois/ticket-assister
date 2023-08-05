@@ -31,10 +31,6 @@ export function getSaveButton() {
  */
 export const quickSelectOptions = [
 	{
-		label: "Quick select...",
-		value: "-1",
-	},
-	{
 		label: "Incident",
 		value: "350",
 	},
@@ -137,32 +133,53 @@ function beaconSetFormValue(id: string) {
 	document.body.appendChild(beacon);
 }
 
+/**
+ * Styles {@param el} to look like an unselected button
+ */
+function styleNotActive(el: HTMLElement) {
+	el.style.border = "3px outset #707070";
+}
+/**
+ * Styles {@param el} to look like a pressed in button
+ */
+function styleActive(el: HTMLElement) {
+	el.style.border = "3px inset #707070";
+}
+
 export function generateQuickSelect() {
-	const quickSelectEl = document.createElement("select");
+	const quickSelectEl = document.createElement("div");
+	quickSelectEl.style.display = "flex";
+	quickSelectEl.style.flexDirection = "row";
+	quickSelectEl.style.gap = "0.5em";
+
 	const formSelectEl = getFormSelectEl();
 	
+	const buttons: Array<HTMLButtonElement> = [];
 	for (const option of quickSelectOptions) {
-		const optionEl = document.createElement("option");
+		const optionEl = document.createElement("button");
 		optionEl.textContent = option.label;
 		optionEl.value = option.value;
+		optionEl.type = "button"; // don't submit on press, tdx!
+		optionEl.addEventListener("click", () => {
+			setFormValue(option.value); //optionEl.value
+		});
+		optionEl.className = "btn btn-info"; //btn-secondary
+		styleNotActive(optionEl);
+		buttons.push(optionEl);
 		quickSelectEl.appendChild(optionEl);
 	}
-
-	quickSelectEl.addEventListener("input", () => {
-		// if not the quick select main menu
-		if (quickSelectEl.value != DEFAULT_SELECT) {
-			//const newOption = quickSelectOptions.find(qso => qso.value === quickSelectEl.value);
-			setFormValue(quickSelectEl.value);
-		}
-	});
 
 	
 	formChangeListen(() => {
 		const foundQuickSelect = quickSelectOptions.find(qsa => qsa.value === formSelectEl.value);
 		if (foundQuickSelect) {
-			quickSelectEl.value = foundQuickSelect.value;
-		} else {
-			quickSelectEl.value = DEFAULT_SELECT;
+			// this should exist
+			const associatedButton = buttons.find(button => button.value === foundQuickSelect.value);
+			// clear out old
+			buttons.forEach(button => styleNotActive(button));
+			if (associatedButton !== undefined) {
+				styleActive(associatedButton);
+			}
 		}
 	});
 	

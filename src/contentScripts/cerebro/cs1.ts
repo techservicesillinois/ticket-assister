@@ -20,8 +20,12 @@ if (redInfo.length !== 0) {
 	alertBox.style.color = "#bf0000";
 
 	const insertBeforeEl = document.querySelector("#groupsettings");
-	if (insertBeforeEl === null || insertBeforeEl.parentElement === null) {
-		throw new DomParseError();
+	try {
+		if (insertBeforeEl === null || insertBeforeEl.parentElement === null) {
+			throw new DomParseError();
+		}
+		insertBeforeEl.parentElement.insertBefore(alertBox, insertBeforeEl);
+	} catch {
+		log.e("Failed to add red flag alerts box before #groupsettings");
 	}
-	insertBeforeEl?.parentElement?.insertBefore(alertBox, insertBeforeEl);
 }

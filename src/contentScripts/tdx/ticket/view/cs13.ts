@@ -5,7 +5,14 @@ import { log } from "utils/logger";
 
 const addListener = async () => {
     log.d(`Adding Ctrl+Enter listener on WYSIWYG`);
-    submitOnCtrlEnter(await getWysiwygBody(), getCommentSaveButton());
+	const wys = await getWysiwygBody();
+	if (wys === null) {
+		// body has not yet loaded but el has
+		log.w(`WYSIWYG body has not yet loaded, trying again in ${500}ms`);
+		setTimeout(addListener, 500);
+	} else {
+		submitOnCtrlEnter(wys, getCommentSaveButton());
+	}
 };
 // add the listener now
 addListener();

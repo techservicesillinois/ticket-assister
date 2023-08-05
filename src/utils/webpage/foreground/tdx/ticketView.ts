@@ -1,6 +1,5 @@
 import { DomParseError } from "utils/errors";
 import type { TicketID } from "utils/tdx/types/ticket";
-import { netIDFromEmail } from "utils/tdx/types/person";
 import { log } from "utils/logger";
 import { TICKETS_BASE_URL, getRequestor } from "./shared";
 import { openWindowWithPost } from "utils/postNewWindow";
@@ -10,6 +9,7 @@ import { receiveMessages, PIPELINE_CEREBRO_TO_TICKET } from "../../link/interfac
 import { squishArray } from "utils/stringParser";
 import { generateFlagSummaryEl } from "../cerebro";
 import { BASE_URL } from "config";
+import { getCurrentTicketNumber } from "../../parser/ticket";
 /**
  * Gets the TDX ticket view URL
  * 
@@ -199,8 +199,6 @@ function resetStylizeGrayedOut(element: HTMLElement) {
  * @throws an {@link Error} if one or more of the {@param actionTitles} were not found in the actions list
  */
 export function grayOutActions(actionTitles: Array<string>) {
-	// todo: gray out
-	// todo: have #drpActions stay open (re-add open class) on first click
 	const failedToGrayOut = [];
 	for (const actionTitle of actionTitles) {
 		try {
@@ -302,11 +300,7 @@ export function collapseDetailsExceptFor(idsOfDetailsToKeep: Array<string>) {
  * if not present in the requestor's email
  */
 export function getClientNetID(): string | null {
-	const emailField = getRequestorFieldDetails().children[1];
-	if (emailField !== undefined && emailField.textContent !== null) {
-		return netIDFromEmail(emailField.textContent.trim()); // will be null if not a U of I email
-	}
-	return null;
+	return getRequestor().netid ?? null;
 }
 /**
  * Returns the requestor field element
@@ -468,7 +462,7 @@ export function addOpenToolsButtons() {
 		/*buttonCerebro.addEventListener("click", () => {
 			// todo: need csrfmiddlewaretoken from cerebro
 			// cerebro: document.querySelector("input[name=\"\"]")
-			openWindowWithPost("https://cerebro.techservices.illinois.edu/", "cerebro", {
+			openWindowWithPost(CEREBRO_URL, "cerebro", {
 				"csrfmiddlewaretoken": "todo",
 				"uin_or_netid": "netid",
 				"submit": "Get User Information",
@@ -516,6 +510,22 @@ export function addRecentRequestorTickets(): Promise<void> {
 				// not really a DomParseError since this is a sub network request
 				throw FetchErrorMessage.UNEXPECTED_RESPONSE;
 			}
+			// strip this Request
+			const recentRequestsGroup = dom.querySelector("#divRequestorRecentRequests > .list-group");
+			if (recentRequestsGroup !== null) {
+				for (const requestEl of recentRequestsGroup.children) {
+					const ticketIdEl = requestEl.children[1]?.children[0];
+					const ticketId = Number(ticketIdEl?.textContent?.trim().slice(-6));
+					if (ticketId && !Number.isNaN(ticketId) && ticketId === getCurrentTicketNumber()) {
+						// remove: this is the same request
+						// we know that its parent is not null
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+						requestEl.parentElement!.removeChild(requestEl);
+						// no others should match
+						break;
+					}
+				}
+			}
 			// this panel has requestor field, tasks, and attachments
 			const rightColumn = document.querySelector("#divContent")?.children[0]?.children[1];
 			if (!rightColumn) {
@@ -530,9 +540,12 @@ export function addRecentRequestorTickets(): Promise<void> {
 /**
  * Sets up TDX Ticket View's message listener
  * for communication with Cerebro
+ * 
+ * @deprecated
+ * Receive directly in cs31.ts
  */
 export function listenForMessages(onInfo: (info: Object) => void) {
-	receiveMessages(PIPELINE_CEREBRO_TO_TICKET, message => listener(message, onInfo));
+	receiveMessages(PIPELINE_CEREBRO_TO_TICKET, async message => await listener(message, onInfo));
 }
 
 /**
@@ -563,7 +576,24 @@ function getCerebroInfoBox() {
 export function setCerebroInfoLoading() {
 	const cerebroInfoBox = getCerebroInfoBox();
 	cerebroInfoBox.textContent = "Getting user info...";
+	cerebroInfoBox.classList.add("loading");
 	cerebroInfoBox.style.color = "#0071c5";
+	
+	// this is probably only called once
+	// so inject
+	// todo: extract this into an `injectStyle(style: string)` function
+	// that tracks it with an id and won't double-insert
+	const sty = document.createElement("style");
+	sty.textContent = `
+	@keyframes fade-in-out {
+		0% { opacity: 1; }
+		50% { opacity: 0.5; }
+		100% { opacity: 1; }
+	}
+	#tkast-cerebro-info.loading {
+		animation: fade-in-out 2s cubic-bezier(0.2, 0.01, 0.25, 1) infinite;
+	}`;
+	document.head.append(sty);
 }
 /**
  * Notes that the client's Cerebro info will not be found
@@ -573,6 +603,7 @@ export function setCerebroInfoLoading() {
 export function setCerebroInfoIdle() {
 	const cerebroInfoBox = getCerebroInfoBox();
 	cerebroInfoBox.textContent = "No user info to display.";
+	cerebroInfoBox.classList.remove("loading");
 	cerebroInfoBox.style.color = "#a46800";
 	cerebroInfoBox.style.fontWeight = "300";
 }
@@ -582,6 +613,7 @@ export function setCerebroInfoIdle() {
  */
 export function setCerebroInfoError() {
 	const cerebroInfoBox = getCerebroInfoBox();
+	cerebroInfoBox.classList.remove("loading");
 	cerebroInfoBox.textContent = "Failed to get user info.";
 	cerebroInfoBox.style.color = "#c50000";
 	cerebroInfoBox.style.fontWeight = "600";
@@ -592,10 +624,10 @@ export function setCerebroInfoError() {
  */
 export function addCerebroInfo(info: Object) {
 	const cerebroInfoBox = getCerebroInfoBox();
+	cerebroInfoBox.classList.remove("loading");
 	cerebroInfoBox.style.border = "2px dotted #000033";
 	cerebroInfoBox.style.padding = "1em";
 
-	// todo use this stuff:
 	const typesEl = document.createElement("p");
 	if (info.key.types.length === 0) {
 		typesEl.textContent = "[person/phone]";

@@ -27,8 +27,8 @@ export async function sendMessage(to: string, message: Object): Promise<any> {
  * {@param listener} can return a response
  */
 export function receiveMessages(from: string, listener: (message: { to: string, message: Object }) => Object | void) {
-	log.d(`Listening for messages from ${from}`);
-	browser.runtime.onMessage.addListener((request, sender, sendResponse) => {
+	log.d(`Listening for messages to ${from}`);
+	browser.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
 		if (sender.tab) {
 			log.d(`Recieved a message from content script ${sender.tab.url}: ${request}`);
 		} else {
@@ -36,13 +36,14 @@ export function receiveMessages(from: string, listener: (message: { to: string, 
 		}
 		if (request.to === from) {
 			// this is for us
-			const sendBack = listener(request.message);
+			const sendBack = listener(request.message); // await if needed
+			console.log("SEND BACK", sendBack); // todo log
 			if (sendBack !== undefined) {
 				log.d(`Sending response back to ${sender.tab ? "a tab" : "the extension"} ${sendBack}`);
-				sendResponse(sendBack);
+				return (sendBack);
 			}
 		}
-		return true; // async
+		//return true; // async
 		//return false; // sync
 	});
 }

@@ -1,15 +1,15 @@
 import type { ToggleableFeature } from "utils/rules/types";
 import { TICKETS_BASE_URL } from "utils/webpage/foreground/tdx/shared";
+import { CEREBRO_URL } from "config";
 
 // note: can request specific site permissions with chrome.permissions.request({ origins }); if specified in optional_permissions
-const CEREBRO_URL = "https://cerebro.techservices.illinois.edu/";
 /**
  * The ticket URLs to match
  * 
  * Includes wildcard globs for queries
  */
 const TICKET_URL = {
-	NEW: `${TICKETS_BASE_URL}/New`,
+	NEW: `${TICKETS_BASE_URL}/New*`, // may have ?FormID=X or not
 	NEW_CREATED: `${TICKETS_BASE_URL}/TicketNewSuccess?*`,
 	// NOTE: TicketDet and TicketSearch optionally have an .aspx extension
 	// so we are wildcard matching everything after that
@@ -21,7 +21,7 @@ const TICKET_URL = {
 const exportDefault: Array<ToggleableFeature> = [
 	{
 		name: "Cerebro/flagger/Alert/Red",
-		description: "Provides a summary box at the top with any red flags about an account.\nThese are things that are likely to cause an issue for the user based on their account types.",
+		description: "Provides a summary box at the top with any red flags about the account on the page.\nThese are things that are likely to cause an issue for the user based on their account types.",
 		contentScripts: [
 			{
 				url: CEREBRO_URL,
@@ -31,7 +31,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "Cerebro/flagger/Highlight/Red",
-		description: "Highlights any red flags about an account on the page.\nThese are things that are likely to cause an issue for the user based on their account types.",
+		description: "Highlights any red flags about the account on the page.\nThese are things that are likely to cause an issue for the user based on their account types.",
 		contentScripts: [
 			{
 				url: CEREBRO_URL,
@@ -41,7 +41,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "Cerebro/flagger/Highlight/Yellow",
-		description: "Highlights any yellow flags about an account on the page.\nThese are things that may cause an issue for the user, but not necessarily.",
+		description: "Highlights any yellow flags about the account on the page.\nThese are things that may cause an issue for the user, but not necessarily.",
 		contentScripts: [
 			{
 				url: CEREBRO_URL,
@@ -51,7 +51,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "Cerebro/flagger/Show count",
-		description: "Shows a count of the number of red and yellow flags for a user's profile.",
+		description: "Shows a count of the number of red and yellow flags for the account on the page.",
 		contentScripts: [
 			{
 				url: CEREBRO_URL,
@@ -93,11 +93,15 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/Create/Auto take ticket",
-		description: "Automatically takes a ticket (gives you Primary Responsibility) after creating a new ticket with responsibility of UIUC-TechSvc-Help Desk.",
+		description: "Automatically takes a ticket (gives you Primary Responsibility) after creating a new ticket with responsibility of UIUC-TechSvc-Help Desk.\nWill not take primary responsibility if the ticket is created in another group.",
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW_CREATED,
 				script: "tdx/ticket/create/cs8.ts",
+			},
+			{ // in case loaded too fast
+				url: TICKET_URL.VIEW,
+				script: "tdx/ticket/view/cs38.ts",
 			},
 		],
 	},
@@ -113,7 +117,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/Create/Auto select Service Request form",
-		description: "Automatically selects \"Tech Services - New Service Request\" on the create ticket screen.",
+		description: "Automatically selects \"Tech Services - New Service Request\".",
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
@@ -123,7 +127,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/Create/Quick select Service Request, Incident, Classtech form",
-		description: "Provides a dropdown to quickly select between \"Tech Services - New Service Request\", \"Tech Services - New Incident\", and \"Tech Services - Classtech Problem Report\" on the create ticket screen.",
+		description: "Provides buttons to quickly select between \"Tech Services - New Service Request\", \"Tech Services - New Incident\", and \"Tech Services - Classtech Problem Report\".",
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
@@ -143,7 +147,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/Create/Hide additional contacts",
-		description: "Collapses the additional contacts field. Can be toggled open.",
+		description: "Collapses the additional contacts field. Can be toggled back on.",
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
@@ -174,7 +178,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/View/Make comments private by default",
-		description: "Automatically makes sure that Make comments private is checked by default when created a new comment",
+		description: "Automatically makes sure that Make comments private is checked by default when creating a new comment.",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
@@ -184,7 +188,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/View/Don't warn if private comment is not notifying",
-		description: "Remove's TDX's warning about providing comments without selecting anyone to notify if comment is marked as private",
+		description: "Removes TDX's warning about providing comments without selecting anyone to notify if comment is marked as private.",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
@@ -214,7 +218,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/View/Gray out unused actions",
-		description: "Grays out infrequently used actions, requiring a double-click to click them.\nThis is to avoid accidentally clicking a different button",
+		description: "Grays out infrequently used actions, requiring a double-click to click them.\nThis is to avoid accidentally clicking a button incorrectly.",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
@@ -234,7 +238,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/View/Button to copy NetID",
-		description: "Adds a button next to the requestor's email to copy their NetID if found.",
+		description: "Adds a button next to the requestor's email to copy their NetID, if it is found.",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
@@ -244,7 +248,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/View/Buttons to open tools with client's account",
-		description: "Adds button to open i-card with the user's account.",
+		description: "Adds button to open i-card with the user's account, if it is found.",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
@@ -254,7 +258,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/View/Show client's recent tickets",
-		description: "Shows recent tickets from the client below the requestor profile (like in the ticket edit page) if there are any.",
+		description: "Shows recent tickets from the client below the requestor profile (like in the ticket edit page), if there are any.",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
@@ -264,7 +268,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/View/Hide attachments if empty",
-		description: "Collapses the attachment box if there are no attachments.\nThe box can be expanded to add more attachments",
+		description: "Collapses the attachment box if there are no attachments.\nThe box can be toggled to be expanded again (for you to add an attachment).",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
@@ -327,7 +331,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	{
 		// todo: not working
 		name: "TDX/Ticket/View/Get Cerebro data",
-		description: "Shows key info about a person from Cerebro.\nDisplays their types and relavent roles as well as any red flags about their account.",
+		description: "Shows key info about a person from Cerebro.\nDisplays their types and relevant roles as well as a summary of any red and yellow flags detected on their account.",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
@@ -341,7 +345,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/Search/Auto select all statuses",
-		description: "Automatically selects all statuses by default in a search (instead of the default of 6 of 9).",
+		description: "Automatically selects all statuses by default in a search (instead of the default of 6 of 9).\nApplied to the fullscreen search but not other searches (e.g. the desktop search).",
 		contentScripts: [
 			{
 				url: `${TICKETS_BASE_URL}/TicketSearch*`,

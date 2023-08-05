@@ -8,8 +8,8 @@ import { log } from "utils/logger";
     try {
         const attachmentCount = await getAttachmentCount();
         const singular = attachmentCount === 1;
-        log.i(`There ${singular ? "is" : "are"} ${attachmentCount} attachment${singular ? "" : "s"}`);
-        if (attachmentCount !== 0) {
+        log.d(`There ${singular ? "is" : "are"} ${attachmentCount} attachment${singular ? "" : "s"}`);
+        if (attachmentCount === 0) {
             collapseEl(await getAttachmentsEl(), "attachments", true);
         }
     } catch (e) {

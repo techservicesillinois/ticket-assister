@@ -12,5 +12,6 @@ export function addTkAstLogoToPage() {
     logo.style.right = "15px";
     logo.style.bottom = "10px";
     logo.style.pointerEvents = "none";
+    logo.style.opacity = "0.6";
     document.body.appendChild(logo);
 }

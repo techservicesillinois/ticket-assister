@@ -2,11 +2,12 @@
 import { BASE_URL } from "config";
 import { log } from "utils/logger";
 import { getCurrentTicketNumber } from "utils/webpage/parser/ticket";
+import { getTicketViewUrl } from "utils/webpage/foreground/tdx/pageLocator";
 
 
 try {
 	log.i(`Redirecting to new created ticket #${getCurrentTicketNumber()}`);
-	window.location.href = BASE_URL + "/Apps/40/Tickets/TicketDet.aspx?TicketID=" + getCurrentTicketNumber();
+	window.location.href = getTicketViewUrl(getCurrentTicketNumber());
 } catch (e) {
 	log.e("Couldn't redirect to new ticket");
 }

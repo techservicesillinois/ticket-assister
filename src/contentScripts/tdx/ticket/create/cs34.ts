@@ -9,6 +9,6 @@ formChangeListen(() => {
         setCreatedVia(CreateMethod["Phone"]);
     } catch (e) {
         // this might be ok. Maybe the requested form doesn't have this field?
-        log.e(`Failed to set created via phone: ${e.message}`);
+        log.e(`Failed to set created via phone: ${e instanceof Error ? e.message : e}`);
     }
 });

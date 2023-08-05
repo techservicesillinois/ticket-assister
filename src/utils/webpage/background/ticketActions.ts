@@ -8,6 +8,7 @@ import { BASE_URL } from "config";
 import { DEFAULT_ALLOWED_TAGS, conformsToHTMLTags, getSubstringBetween } from "utils/stringParser";
 import { getTicketViewUrl } from "../foreground/tdx/pageLocator";
 import { DomParseError } from "utils/errors";
+import { getCurrentPersonCached } from "./getCurrentPersonCache";
 
 /**
  * Assigns responsibility of the current ticket to the current user
@@ -112,38 +113,42 @@ export async function takeResponsibilityBg(ticketID: TicketID, addToMyWork = fal
  * @returns a {@link Promise}:
  * - Resolve: the currently logged in user (the user signed in to TDX running this code)
  * - Reject: network errors
- *
- * @todo cache this person: it won't change
  */
-export function getCurrentPerson(): Promise<ITDXPersonBasic> {
-    return new Promise((res, rej) => {
-        fetch(BASE_URL + "/Home/Desktop/Default.aspx")
-            .then(verifyFetchSuccess)
-            .then(getDomFromText)
-            .then(dom => {
-                const valEl = dom.querySelector("ul.user-profile-menu.dropdown-menu.dropdown-menu-right.gutter-top-sm > li[role=\"menuitem\"] > a[href=\"#\"]");
-                const nameEl = dom.querySelector("ul.user-profile-menu.dropdown-menu.dropdown-menu-right.gutter-top-sm > li.profile-image > div.profile-image");
-                if (valEl === null || !valEl.hasAttribute("onclick") || nameEl === null || !nameEl.hasAttribute("title")) {
-                    return rej(FetchErrorMessage.UNEXPECTED_RESPONSE);
-                }
-                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                const val = valEl.getAttribute("onclick")!; // bang (safe because just checked)
-                const absoluteBase = BASE_URL.substring(BASE_URL.indexOf("/", 8)); // /TDNext or /SBTDNext
-                const startChunk = `openWin('${absoluteBase}/Apps/People/PersonDet.aspx?U=`; // javascript:
-                const endChunk = "'";
-                const startIdx = val.indexOf(startChunk) + startChunk.length;
-                /*res(new TDXPerson({
-                  id: val.substring(startIdx, val.indexOf(endChunk, startIdx)),
-                  name: nameEl.getAttribute("title")!,
-                }));*/
-                res({
-                    id: val.substring(startIdx, val.indexOf(endChunk, startIdx)),
-                    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                    name: nameEl.getAttribute("title")!,
-                });
-            }, err => rej(err))
-            .catch(err => rej(err));
-    });
+export async function getCurrentPerson(): Promise<ITDXPersonBasic> {
+	try {
+		const currentPerson = await getCurrentPersonCached();
+		if (currentPerson === null) {
+			throw new Error("No cached person found");
+		}
+		return currentPerson;
+	} catch {
+		// pass through...
+	}
+    // if null or caught, do the big fetch
+    // errors after this point should bubble
+    const dom = await fetch(BASE_URL + "/Home/Desktop/Default.aspx")
+        .then(verifyFetchSuccess)
+        .then(getDomFromText);
+    const valEl = dom.querySelector("ul.user-profile-menu.dropdown-menu.dropdown-menu-right.gutter-top-sm > li[role=\"menuitem\"] > a[href=\"#\"]");
+    const nameEl = dom.querySelector("ul.user-profile-menu.dropdown-menu.dropdown-menu-right.gutter-top-sm > li.profile-image > div.profile-image");
+    if (valEl === null || !valEl.hasAttribute("onclick") || nameEl === null || !nameEl.hasAttribute("title")) {
+        throw FetchErrorMessage.UNEXPECTED_RESPONSE;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const val = valEl.getAttribute("onclick")!; // bang (safe because just checked)
+    const absoluteBase = BASE_URL.substring(BASE_URL.indexOf("/", 8)); // /TDNext or /SBTDNext
+    const startChunk = `openWin('${absoluteBase}/Apps/People/PersonDet.aspx?U=`; // javascript:
+    const endChunk = "'";
+    const startIdx = val.indexOf(startChunk) + startChunk.length;
+    /*return new TDXPerson({
+        id: val.substring(startIdx, val.indexOf(endChunk, startIdx)),
+        name: nameEl.getAttribute("title")!,
+    });*/
+    return {
+        id: val.substring(startIdx, val.indexOf(endChunk, startIdx)),
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        name: nameEl.getAttribute("title")!,
+    };
 }
 
 /**
@@ -622,17 +627,28 @@ export async function getTicketDatumBg(ticketID: TicketID, fieldValue: string): 
 			.then(verifyFetchSuccess)
 			.then(getDomFromText)
 			.then(dom => {
-				//const sectionToSearchIn = dom.querySelector("#divDetails");
-				const sectionToSearchIn = dom.querySelector("#divContent")?.children[0]?.children[0];
-				if (!sectionToSearchIn || !(sectionToSearchIn instanceof HTMLElement)) {
-					return rej(new DomParseError());
-				}
-				const dets = getTicketDatumsRecursively(sectionToSearchIn);
-				res(dets[fieldValue]);
+                const value = getTicketDatumFg(dom, fieldValue); // also may throw, rej'ing
+                if (value !== undefined) {
+                    res(value);
+                } else {
+                    rej();
+                }
 			},
 			() => rej(FetchErrorMessage.NETWORK_ERROR)
 		);
 	});
+}
+/**
+ * Gets a ticket datum {@param fieldValue} from the foreground {@param dom}
+ */
+export function getTicketDatumFg(dom: Document, fieldValue: string): string | undefined {
+    //const sectionToSearchIn = dom.querySelector("#divDetails");
+    const sectionToSearchIn = dom.querySelector("#divContent")?.children[0]?.children[0];
+    if (!sectionToSearchIn || !(sectionToSearchIn instanceof HTMLElement)) {
+        throw new DomParseError();
+    }
+    const dets = getTicketDatumsRecursively(sectionToSearchIn);
+    return dets[fieldValue];
 }
 /**
  * Gets the current status of the ticket

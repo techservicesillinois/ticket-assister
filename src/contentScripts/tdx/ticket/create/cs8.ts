@@ -12,11 +12,10 @@ Promise.all([getCurrentPerson(), getTicketDatumBg(currTicketNumber, "Responsibil
 				const status = await getTicketStatusBg(currTicketNumber);
 				if (status === "Open") {
 					await takeResponsibilityBg(currTicketNumber)
-					log.d(`Took responsibility of tdx#${currTicketNumber}`);
+					log.i(`Took responsibility of tdx#${currTicketNumber}`);
 				} else {
-					// todo test
 					await assignResponsibilityBg(currTicketNumber, currentPerson);
-					log.d(`Assigned responsibility of tdx#${currTicketNumber} to current person (${currentPerson.name})`);
+					log.i(`Assigned responsibility of tdx#${currTicketNumber} to current person (${currentPerson.name})`);
 				}
 				return;
 			} catch (e) {

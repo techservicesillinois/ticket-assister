@@ -211,7 +211,9 @@ async function registerContentScripts(rules: Record<string, boolean | null>): Pr
 						await registerContentScriptByRuleName(ruleName);
 						log.i(`Registered content script rule "${ruleName}"`);
 					} catch (e) {
-						throw new Error(`Failed to register content script for rule "${ruleName}": ${e}`);
+						//throw new Error(`Failed to register content script for rule "${ruleName}": ${e}`);
+						// throwing here would cause the remaining promises to fail
+						log.crit(`Failed to register content script for rule "${ruleName}": ${e}`);
 					}
 				} // else not active: don't register
 			})

@@ -1,3 +1,4 @@
+import { log } from "utils/logger";
 import { injectScript } from "utils/windowScript";
 import * as browser from "webextension-polyfill";
 const onScreenErrorsWrapper = document.querySelector("#onscreen-errors-wrapper");
@@ -48,7 +49,7 @@ if (optionsEl === null) {
     });
 }
 
-// Macros
+/*// Macros
 enum ARROW_STATE {
     UP = 0,
     DOWN = 1,
@@ -61,7 +62,6 @@ function getArrow(arrowState: ARROW_STATE): string {
     }
     return "\u25B2";
 }
-// todo injectScript()
 let arrowState = ARROW_STATE.DOWN;
 const macrosEl = document.querySelector("#macros");
 const macrosDropdownEl = document.querySelector("#macros-dropdown");
@@ -99,11 +99,11 @@ document.addEventListener("click", () => {
     }
 })
 
-/**
+|**
  * Hides the macros dropdown el
  * 
  * Should only be called within the context of toggleDropdown to update all UI elements
- */
+ *|
 function hideMacrosDropdown() {
     if (macrosDropdownEl === null) {
         onScreenError("Failed to hide macros dropdown.");
@@ -113,12 +113,11 @@ function hideMacrosDropdown() {
     const macrosDropdownElUseMe = macrosDropdownEl as HTMLElement;
     macrosDropdownElUseMe.style.display = "none";
     // todo animate fade out
-}
-/**
+|**
  * Shows the macros dropdown el
  * 
  * Should only be called within the context of toggleDropdown to update all UI elements
- */
+ *|
 function showMacrosDropdown() {
     if (macrosDropdownEl === null) {
         onScreenError("Failed to show macros dropdown.");
@@ -132,54 +131,77 @@ function showMacrosDropdown() {
 
 interface Macro {
     name: string,
-	/**
+	|**
 	 * The relative path to the macro script
-	 */
+	 * from `src/static/macros`
+	 *
+	 * File extension should be the output file, so `.js`
+	 *|
     path: string,
+	|**
+	 * The URLs which the script is allowed to run on.
+	 *
+	 * Supports the `*` wildcard
+	 *
+	 * @internalRemarks
+	 * Going to let macros be runnable anywhere
+	 * and they can handle the current page logic themselves
+	url: Array<string>,*|
 }
-/**
+|**
+ * A list of macros available to the user
+ * in the dropdown menu
+ *|
+const macros: Array<Macro> = [
+	{
+		name: "New Ticket",
+		path: "newTicket.js",
+	},
+	{
+		name: "Get NetIDs of Employees",
+		path: "getNetIdsOfEmployees.js",
+	},
+	{
+		name: "Get Timeclock Data",
+		path: "getTimeclockData.js",
+	},
+];
+|**
  * Generates a macro element for a list of macros
  * 
  * Wraps in an IIFE
  * @param macro the macro element
  * @returns the HTML element
- * 
- * @todo
- * ~~verify that Content Security Policy doesn't get angry~~
- * Import these (else filter) based on Options
- * Use file imports-- don't inject JS as text 🤡
- *
- * Make sure accessing proper `window` (might need to inject)
- * `browser.tabs.executeScript`
- */
-function generateMacroEl(macro: Macro): HTMLElement {
+ *|
+async function generateMacroEl(macro: Macro): Promise<HTMLElement> {
     const wrapper = document.createElement("div");
     wrapper.classList.add("macro");
     const element = document.createElement("button");
     element.textContent = macro.name;
-	// todo
-	//import script from `${macro.path};
-	//element.addEventListener("click", script);
+	wrapper.addEventListener("click", async () => {
+		try {
+            const currentTab = (await browser.tabs.query({ active: true, currentWindow: true }))[0]; //await browser.tabs.getCurrent();
+            if (currentTab.id === undefined) {
+                throw new Error("currentTab id is undefined");
+            }
+			await browser.scripting.executeScript({ files: [`macros/${macro.path}`], target: { tabId: currentTab.id } });
+		} catch (e) {
+			log.e(`Failed to run macro ${macro.name}: ${e.message}`);
+		}
+	});
+
     wrapper.appendChild(element);
     return wrapper;
 }
-(function initializeMacrosDopdown() {
+(async function initializeMacrosDopdown() {
     if (macrosDropdownEl === null) {
         onScreenError("Failed to show initialize macros dropdown.");
         return;
     }
     hideMacrosDropdown();
 
-	// todo
-    const macros: Array<Macro> = [
-        {
-            name: "Test",
-            path: "../macros.ts",
-        },
-    ];
-
-    const macroEls = macros.map(macro => generateMacroEl(macro));
+    const macroEls = await Promise.all(macros.map(async macro => await generateMacroEl(macro)));
     for (const macroEl of macroEls) {
         macrosDropdownEl.appendChild(macroEl);
     }
-})();
+})();*/

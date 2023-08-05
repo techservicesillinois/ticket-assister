@@ -1,10 +1,10 @@
 import { BASE_URL } from "config";
 import { DomParseError } from "utils/errors";
-import { watchDOMChanges } from "utils/lib/observeDOM";
-import { log } from "utils/logger";
-import type { ITDXPerson } from "utils/tdx/types/person";
 import { netIDFromEmail } from "utils/tdx/types/person";
+import type { ITDXPerson } from "utils/tdx/types/person";
 import type { AtLeast } from "utils/types";
+import { getSaveButton } from "./ticketEdit";
+import { log } from "utils/logger";
 
 /**
  * The amount of time to wait before trying to get the WYSIWYG El again
@@ -198,7 +198,7 @@ export function getRequestor(): AtLeast<ITDXPerson, "name" | "email"> {
 
 	// todo get uin
 	let uin;
-	const uinEl = personCard.children[4];
+	const uinEl = personCard.children[5];
 	if (uinEl !== undefined && uinEl.textContent !== null) {
 		// will auto-trim
 		if (!Number.isNaN(Number(uinEl.textContent))) {
@@ -310,4 +310,45 @@ export async function onWysiwygLoad(listener: () => void): Promise<void> {
 		});
 	});*/
 	return;
+}
+
+/**
+ * The `__doPostBack` function defined in TDX's `window`
+ *
+ * @return true if probable success, false if probably failure
+ */
+export function doPostBack(eventTarget, eventArgument) {
+	let theForm = document.forms['Form1'];
+	if (!theForm) {
+		theForm = document.Form1;
+	}
+	if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+		theForm.__EVENTTARGET.value = eventTarget;
+		theForm.__EVENTARGUMENT.value = eventArgument;
+		theForm.submit();
+		// note: page will be refreshed
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/**
+ * Adds submit on ctrl enter handlers
+ * to the body and WYSIWYG els,
+ * catching errors and logging them.
+ */
+export function addSubmitOnCtrlEnterHandlers() {
+	try {
+		submitOnCtrlEnter(document.body, getSaveButton());
+	} catch (e) {
+		log.e(`Failed to add submit on Ctrl+Enter listener to document body: ${e instanceof Error ? e.message : e}`);
+	}
+	(async () => {
+		try {
+			submitOnCtrlEnter(await getWysiwygBody(), getSaveButton());
+		} catch (e) {
+			log.e(`Failed to add submit on Ctrl+Enter listener to WYSIWYG body: ${e instanceof Error ? e.message : e}`);
+		}
+	})();
 }

@@ -5,6 +5,7 @@ import { listener } from "../link/cerebro";
 import { getRedFlagIcon, getYellowFlagIcon } from "utils/icons";
 import { log } from "utils/logger";
 import { addTooltip } from "utils/tooltip";
+import { CEREBRO_URL } from "config";
 
 /**
  * Looks up a NetID or UIN
@@ -20,7 +21,9 @@ import { addTooltip } from "utils/tooltip";
  * Typically should alert the ticket listener via {@link sendRedirection} before calling this
  */
 export function lookupNetIDOrUIN(uinOrNetID: string) {
-    if (!(window.location.host === "cerebro.techservices.illinois.edu" && window.location.pathname === "/")) {
+	// slice off the trailing slash
+	const cerebroHost = CEREBRO_URL.substring(8, CEREBRO_URL.length - 1);
+    if (!(window.location.host === cerebroHost && window.location.pathname === "/")) {
         throw new Error("Not at the correct URL.");
     }
     const form = document.querySelector("form");
@@ -246,8 +249,6 @@ export function getRedInfo(): Array<CerebroDatum> {
     }
     const redInfo: Array<CerebroDatum> = [];
 	//function addIf(array: Array<CerebroDatum>, search: { section: string, key: string }, failureNote: string, test: (value: string) => boolean) {
-	addIf(redInfo, { section: "Central Registry", key: "Illinois Email Delivery", }, "Not set", value => value === "Email Forwarding not set");
-	addIf(redInfo, { section: "Central Registry", key: "Illinois Email Delivery", }, "Typo detected", emailDeliveryTypo);
 	addIf(redInfo, { section: "Active Directory (AD)", key: "Account Status", }, "Not enabled", value => value !== "enabled");
 
 	addIf(redInfo, { section: "Active Directory (AD)", key: "AD Account Lockout" }, "Locked out", value => value !== "No");
@@ -256,6 +257,8 @@ export function getRedInfo(): Array<CerebroDatum> {
 		const shouldHaveEmail = ["student", "staff", "retired"];
 		if (hasAtLeastOne(accountTypes, shouldHaveEmail)) {
 			addIf(redInfo, { section: "Central Registry", key: "Illinois Email Delivery" }, "Blank", value => value === "");
+			addIf(redInfo, { section: "Central Registry", key: "Illinois Email Delivery", }, "Not set", value => value === "Email Forwarding not set");
+			addIf(redInfo, { section: "Central Registry", key: "Illinois Email Delivery", }, "Typo detected", emailDeliveryTypo);
 
 			try {
 				if (!inboxExists()) {

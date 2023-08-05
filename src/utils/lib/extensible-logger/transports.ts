@@ -23,11 +23,36 @@ export interface Transport {
 }
 
 /**
+ * A helper function
+ * which generates styling
+ * for a particular {@param logLevel}
+ */
+function getLogLevelStyling(logLevel: LogLevel) {
+    switch (logLevel) {
+        case LogLevel.Critical:
+            return "background-color: #ff0000; color: #fff; border-width: 1px; border-style: solid";
+        case LogLevel.Error:
+            return "background-color: #bb0000; color: #fff";
+        case LogLevel.Warning:
+            return "background-color: #aaaa00; color: #000";
+        case LogLevel.Info:
+            return "background-color: #00aaaa; color: #fff";
+        case LogLevel.Debug:
+            return "background-color: #aaaaaa; color: #000";
+    }
+}
+
+/**
  * A transport interface using `window.console`
  */
 export class TransportConsole implements Transport {
     handleMessage(a: string, b: LogLevel): void {
-        console.log(`[${readableLogLevel(b)}] ${a}`);
+        // this should be defined
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const stackTraceStr = new Error().stack!.substring(13);
+        const stackTraceArr = stackTraceStr.split("at").map(frame => frame.trim()).map(frame => frame.substring(frame.indexOf("/", "chrome-extension://".length+1)+1));
+        // [0] is TransportConsole.handleMessage, [1] is logger, [2] is Set.forEach, [3] is stringParser
+        console.log(`%c[${readableLogLevel(b)}]%c {${stackTraceArr[4]}} ${a}`, getLogLevelStyling(b), "");
     }
     validationError() {
         // console always works
@@ -84,8 +109,13 @@ export class TransportStorage implements Transport {
                 return new Array<string>();
             }
         })();
+        // this should be defined
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        const stackTraceStr = new Error().stack!.substring(13);
+        const stackTraceArr = stackTraceStr.split("at").map(frame => frame.trim()).map(frame => frame.substring(frame.indexOf("/", "chrome-extension://".length+1)+1));
+        // [0] is TransportConsole.handleMessage, [1] is logger, [2] is Set.forEach, [3] is stringParser
         const formattedDate = new Date().toLocaleDateString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, day: "2-digit", month: "2-digit", year: "2-digit" });
-        logData.push(`${formattedDate} [${readableLogLevel(b)}]\t${a}`);
+        logData.push(`${formattedDate} {${stackTraceArr[4]}} [${readableLogLevel(b)}]\t${a}`);
         if (logData.length > this.#STORAGE_LINES) {
             logData.shift();
         }
@@ -108,10 +138,11 @@ export class TransportStorage implements Transport {
         // add last-minute data
         try {
             const cp = await getCurrentPreset();
-            this.handleMessage(`Current preset is ${cp}`, LogLevel.Debug);
-            if (cp === CUSTOM_PRESET) {
-                this.handleMessage(`Custom preset statuses are ${await getAllCustomRuleStatuses()}`, LogLevel.Debug);
-            }
+            await this.handleMessage(`{Request for log file} Current preset is ${cp}`, LogLevel.Debug);
+            /*if (cp === CUSTOM_PRESET) {
+				// todo: getAllCustomRuleStatuses to comma string
+                await this.handleMessage(`{Request for log file} Custom preset statuses are ${await getAllCustomRuleStatuses()}`, LogLevel.Debug);
+            }*/
         } catch {
             console.error("Failed to add current preset data to log file.");
         }

@@ -23,11 +23,14 @@ function getExchangeElBody(): HTMLTableSectionElement {
  * @remarks
  * Is based off of the value displayed under "Inbox Rules"
  * This value is not always correct. T2 can check directly.
- *
- * @todo implement
  */
 export function inboxExists(): boolean {
-	return getExchangeElBody().children[3]?.textContent?.trim() !== "No mailbox found";
+	try {
+		return getExchangeElBody().children[3]?.textContent?.trim() !== "No mailbox found";
+	} catch {
+		// not expected, even for inboxes with rules
+		throw new DomParseError();
+	}
 }
 /**
  * A listed inbox rule
@@ -70,6 +73,14 @@ export function getInboxRules(): Array<InboxRule> {
 	const bod = getExchangeElBody();
 	const inboxRules: Array<InboxRule> = [];
 	// cerebro people make the weirdest formats
+	const firstLine = bod.children[3];
+	if (firstLine === null) {
+		throw new DomParseError();
+	}
+	if (bod.children.length === 4 && firstLine.textContent?.trim() === "None") {
+        // no inbox rules
+        return inboxRules;
+    }
 	// todo verify that the data looks good and throw if not
 	for (let i = 3; i < bod.children.length; i += 3) {
 		const a = bod.children[i].children[0];
@@ -293,14 +304,50 @@ const prefixString = "Currently Viewing Information for NetID: "; //"NetID: "
 /**
  * Gets the NetID of the user on screen
  *
- * @returns null if not found or a string of the NetID
+ * @returns
+ * - string: the NetID
+ * - null: netid is invalid (or does not exist)
+ * - undefined: not loaded/not found
+ * 
+ * @todo make this and {@link getNetIdNotFound} less confusing
+ * Refactor at webpage/link/cerebro.ts
  */
-export function getCurrentNetId(): string | null {
+export function getCurrentNetId(): string | null | undefined {
+	const errorMessage = document.querySelector(".errorlist")?.textContent;
 	const heading = document.querySelector("h2")?.textContent;
-	if (!heading || heading.indexOf(prefixString) === -1) {
+	if (
+		(errorMessage) // "That is not a valid UIN...", "Ensure that this value..."
+		|| (heading && heading.indexOf("was not found") !== -1)
+	) {
 		return null;
 	}
+	if (!heading || heading.indexOf(prefixString) === -1) {
+		return undefined;
+	}
 	return heading.substring(heading.indexOf(prefixString) + prefixString.length);
+}
+/**
+ * @returns the NetID in the input el
+ * 
+ * @remarks
+ * Will return the proper netid when the page has just loaded *and the NetID is not found.*
+ * Will return blank when the page has just loaded *and the NetID **is** not found.*
+ */
+export function getNetIdInput(): string {
+	/*const heading = document.querySelector("h2")?.textContent;
+	if (!heading) {
+		return null;
+	}
+	const startIndex = heading.indexOf("NetID ");
+	if (startIndex === -1) {
+		return null;
+	}
+	return heading.substring(startIndex+6, heading.indexOf(" ", 6));*/
+	const el = <HTMLInputElement | null>document.querySelector("input[name=\"uin_or_netid\"");
+	if (el === null) {
+		throw new DomParseError();
+	}
+	return el.value;
 }
 
 /**

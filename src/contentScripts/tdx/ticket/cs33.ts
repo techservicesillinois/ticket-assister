@@ -21,7 +21,8 @@ if (selectEl === null) {
         try {
             selectEl.parentElement!.querySelector(".ms-parent button")!.children[0]!.textContent = "All selected";
         } catch {
-            throw new DomParseError();
+            //throw new DomParseError();
+			log.w("Failed to update text of status: element not found");
         }
         const applyBtn = document.querySelector("#btnApply");
         if (applyBtn !== null && applyBtn instanceof HTMLElement) {

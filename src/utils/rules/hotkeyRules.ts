@@ -4,19 +4,22 @@ import { getCurrentTicketNumber } from "../../utils/webpage/parser/ticket";
 import { getCommentBox, scrollIntoViewWithHeader } from "../../utils/webpage/foreground/tdx/ticketView";
 import { getTicketEditUrl, getTicketUpdateUrl } from "../../utils/webpage/foreground/tdx/pageLocator";
 import { log } from "../../utils/logger";
-import { TICKETS_BASE_URL } from "../../utils/webpage/foreground/tdx/shared";
+import { TICKETS_BASE_URL, doPostBack } from "../../utils/webpage/foreground/tdx/shared";
 
 /**
  * Sets up hotkeys based on rules
  * Running callbacks whenever a key is pressed
  * and an input is not focused (active)
+ *
+ * Only runs if that is the only key being pressed
+ * (i.e. not a chord)
  */
 export function handleHotkeys(hotkeyRules: Record<string, () => void>) {
 	window.addEventListener("keydown", event => {
 		// verify not typing in an input box
 		if (document.activeElement !== null && document.activeElement.tagName !== "INPUT") {
 			for (const key of Object.keys(hotkeyRules)) {
-				if (event.key === key) {
+				if (event.key === key && !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
 					// run callback
 					hotkeyRules[key]();
 				}
@@ -47,8 +50,15 @@ export const hotkeyRules: Record<string, () => void> = {
 		}
 	},
 	"t": () => {
-		// Take primary responsibility (if unassigned)
 		const takeButton = document.querySelector("#btnTakeTicket");
+		// only run if this is an option
+		if (takeButton !== null) {
+			// Chrome doesn't like running the script on clicking the button manually
+			// so have it your way
+			doPostBack("btnTakeTicket", "");
+		}
+		/*
+		// Take primary responsibility (if unassigned)
 		if (takeButton !== null  && (takeButton instanceof HTMLElement)) {
 			// TDX will only render if unassigned
 			takeButton.click();
@@ -56,7 +66,7 @@ export const hotkeyRules: Record<string, () => void> = {
 		} else {
 			log.i(`No take button found; not taking responsibility.`);
 			// check unassigned
-			/*
+			/.
 			// hard to tell...
 			// responsibility must not contain a slash to not be group and individual assigned
 			// and responsibility must not be the name of a person
@@ -69,8 +79,9 @@ export const hotkeyRules: Record<string, () => void> = {
 				takeResponsibilityBg(getCurrentTicketNumber());
 				// fallback: window.__doPostBack("btnTakeTicket", "")
 			}
-			*/
+			./
 		}
+		*/
 	},
 	"r": () => {
 		// Refresh ticket page

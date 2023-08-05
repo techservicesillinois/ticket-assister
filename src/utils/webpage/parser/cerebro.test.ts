@@ -36,7 +36,8 @@ describe("emailDeliveryTypo", () => {
         });
         describe("non-Illinois delivery", () => {
             expect(emailDeliveryTypo("test@otherdomain.com")).toBe(false);
-        expect(emailDeliveryTypo("test@uic.edu")).toBe(false);
+            expect(emailDeliveryTypo("test@uic.edu")).toBe(false);
+            expect(emailDeliveryTypo("netid@gmail.com")).toBe(false);
         });
     });
     it("should fail when near @mx.uillinois.edu", () => {

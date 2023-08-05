@@ -44,11 +44,24 @@
 			100% { opacity: 0; }
 		}
 
+		@keyframes xtreme-pulse {
+			20% { transform: scale(1); }
+			50% { transform: scale(2); }
+			80% { transform: scale(1); }
+		}
+		@keyframes xtreme-flare {
+			0% { filter: hue-rotate(0deg) brightness(1); }
+			50% { filter: hue-rotate(180deg) brightness(1.5); }
+			100% { filter: hue-rotate(360deg) brightness(1); }
+		}
         .download-logs {
             /* something hideous */
 			background: radial-gradient(rgb(231 17 165) 0%, transparent 30%, #1f7541);
     		border: 3px double #aeeac6;
         }
+		.download-logs:hover {
+			animation: xtreme-pulse 0.4s cubic-bezier(0.8, 0, 0.2, 1) infinite, xtreme-flare 0.4s cubic-bezier(0.2, 0, 0.8, 1) infinite;
+		}
 
 		.option-wrapper {
 			margin-left: 2em;
@@ -106,7 +119,7 @@
 
     <p class="subtitle">Enable/disable features</p>
 
-	<p><a href="/pages/trouble.html">Help!</a></p>
+	<!--<p><a href="/pages/trouble.html">Help!</a></p>-->
 
     <div class="presets-wrapper">
         <p>Preset: </p>
