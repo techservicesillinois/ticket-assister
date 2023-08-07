@@ -1,9 +1,9 @@
 # Todo
 
-## Next release
+## Next minor release
 
-1.1.0
-Accessible for others on help.uillinois.edu
+> 1.1.0
+> Accessible for others on help.uillinois.edu
 
 - **glob Apps/X/Tickets to allow things besides U of I - Main (still in UIUC help.uillinois)**
     - config.ts, middleman.ts, person.ts, **ticketActions.ts**, shared.ts, ticketEdit.ts, ticketView.ts

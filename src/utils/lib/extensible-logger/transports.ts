@@ -47,12 +47,10 @@ function getLogLevelStyling(logLevel: LogLevel) {
  */
 export class TransportConsole implements Transport {
     handleMessage(a: string, b: LogLevel): void {
-        // this should be defined
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const stackTraceStr = new Error().stack!.substring(13);
+        const stackTraceStr = (new Error().stack ?? "").substring(13);
         const stackTraceArr = stackTraceStr.split("at ").map(frame => frame.trim());
         // [0] is TransportConsole.handleMessage, [1] is logger
-        const pathOfFile = stackTraceArr.find(stackStr => stackStr.indexOf(".js") !== -1);
+        const pathOfFile = stackTraceArr.find(stackStr => stackStr.indexOf(".js") !== -1 && stackStr.indexOf("stringParser") === -1);
         const stackToShow = pathOfFile?.substring(pathOfFile.indexOf("/", pathOfFile.indexOf("chrome-extension://")+"chrome-extension://".length)+1)
             ?? stackTraceArr[2];
         console.log(`%c[${readableLogLevel(b)}]%c {${stackToShow}} ${a}`, getLogLevelStyling(b), "");
@@ -112,9 +110,7 @@ export class TransportStorage implements Transport {
                 return new Array<string>();
             }
         })();
-        // this should be defined
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        const stackTraceStr = new Error().stack!.substring(13);
+        const stackTraceStr = (new Error().stack ?? "").substring(13);
         const stackTraceArr = stackTraceStr.split("at ").map(frame => frame.trim());
         // [0] is TransportConsole.handleMessage, [1] is logger
         const pathOfFile = stackTraceArr.find(stackStr => stackStr.indexOf(".js") !== -1);
@@ -171,3 +167,4 @@ export class TransportStorage implements Transport {
     }
 }
 // todo make TransportBeacon: sends data to log collector slipstream
+// its handleMessage should disregard low severity (non-errors)

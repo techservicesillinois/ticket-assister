@@ -1,5 +1,4 @@
 // <rule name="TDX/Ticket/View/Don't warn if private comment is not notifying">
-import { DomParseError } from "utils/errors";
 import { watchDOMChanges } from "utils/lib/observeDOM";
 import { getCommentBox, getCommentMakePrivateButton, commentNotifyIsEmpty } from "utils/webpage/foreground/tdx/ticketView";
 import { log } from "utils/logger";

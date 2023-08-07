@@ -340,6 +340,8 @@ export function genListInfoEl(infos: Array<CerebroDatum>) {
  * 
  * Based on the passed {@param redInfo} and {@param yellowInfo},
  * so can be generated on any page(provided that information is known)
+ * 
+ * @todo maybe hide flag icon if count === 0
  */
 export function generateFlagSummaryEl(redInfo: Array<CerebroDatum> | null, yellowInfo: Array<CerebroDatum> | null) {
 	const flagSummaryEl = document.createElement("div");
