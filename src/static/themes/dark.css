@@ -1,0 +1,111 @@
+body {
+    background: #2b2b2b!important;
+    color: #fff!important;
+}
+
+a, .btn-link {
+    /*color: #4b97e2!important;*/
+    color: #80c0ff!important;
+}
+
+.control-label, h1, h2, label {
+    color: #bebebe!important;
+}
+div.white-bg {
+    background-color: #2b2b2b!important;
+}
+.copyButton {
+    background-color: #000!important;
+    border-color: #ffffff1a!important;
+}
+.panel {
+    background-color: #2b2b2b!important;
+}
+.panel-default {
+    border-color: #222!important;
+}
+.panel-heading, nav, .TabButtonCell {
+    color: #d4d4d4!important;
+    background-color: #4a4a4a!important;
+}
+.list-group-item, .ms-choice, .ms-drop, .dropdown-menu {
+    background-color: #000!important;
+}
+div.panel-footer {
+    background-color: #0a0a0a!important;
+}
+.navbar {
+    border-color: #2b2b2b!important;
+}
+.comment {
+    background-color: #110e0c!important;
+}
+
+.talu_holder .luac_default {
+    color: #a1a1a1;
+}
+.talu_holder .bit-input input {
+    background: #000;
+}
+.lu_tdac-auto, div.lu_tdac-auto ul {
+    background: #000!important;
+}
+.lu_tdac-auto ul li div.talu_subcaption {
+    color: #aaa!important;
+}
+.bit-box {
+    background: #2b2b2b!important;
+    color: #fff!important;
+}
+
+.gray {
+    color: #a1a1a1!important;
+}
+.black {
+    /* white */
+    color: #fff!important;
+}
+
+*.form-control, .select2-container .select2-choice, .select2-container .select2-choices, .select2-container .select2-choices .select2-search-field input, .select2-drop, .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control, .ms-choice {
+    color: #fff!important; /*#aaa*/
+    background-color: #000!important;
+}
+.field-validation-error {
+    background: #e32621;
+}
+.input-group-btn .btn-default, .btn-file input[type=file] {
+    background-color: #000!important;
+}
+.select2-default, .input-group-btn .btn-default {
+    color: #a1a1a1!important;
+}
+
+.popover {
+    background-color: #2b2b2b!important;
+}
+
+.table-striped>tbody>tr:nth-of-type(odd) {
+    background-color: #4a4a4a!important;
+}
+.TDGridHeader {
+    background-color: #4a4a4a!important;
+}
+.ui-layout-pane {
+    background: #000!important;
+}
+.nav1, .nav2, .nav3 {
+    background-color: #0a0a0a!important;
+    color: #fff!important;
+}
+
+.modal-content {
+    background-color: #2b2b2b!important;
+}
+div.filter-section {
+    background-color: #000!important;
+}
+
+/*.cke_reset_all, .cke_reset_all * {
+    background: #111!important;
+    color: #ccc!important;
+}*/

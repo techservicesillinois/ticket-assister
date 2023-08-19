@@ -1,9 +1,10 @@
 # Todo
 
-## Next minor release
+## Bugs
 
-> 1.1.0
-> Accessible for others on help.uillinois.edu
+- take prim resp not consistent
+
+## Release for others on help.uillinois.edu
 
 - **glob Apps/X/Tickets to allow things besides U of I - Main (still in UIUC help.uillinois)**
     - config.ts, middleman.ts, person.ts, **ticketActions.ts**, shared.ts, ticketEdit.ts, ticketView.ts
@@ -12,6 +13,8 @@
 ## Backlog
 
 - ensure a consistent level of logging throughout
+
+- remap hotkeys options
 
 - add `@src/*`, `@utils/*`, `@config`, `@rules/*` import paths
     - fix src/rules/* not allowing absolute imports (eslint)

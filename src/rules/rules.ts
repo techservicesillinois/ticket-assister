@@ -1,6 +1,6 @@
 import type { ToggleableFeature } from "utils/rules/types";
 import { TICKETS_BASE_URL } from "utils/webpage/foreground/tdx/shared";
-import { CEREBRO_URL } from "config";
+import { BASE_URL, CEREBRO_URL } from "config";
 
 // note: can request specific site permissions with chrome.permissions.request({ origins }); if specified in optional_permissions
 /**
@@ -16,6 +16,7 @@ const TICKET_URL = {
 	VIEW: `${TICKETS_BASE_URL}/TicketDet*`,
 	EDIT: `${TICKETS_BASE_URL}/Edit?*`,
 	UPDATE: `${TICKETS_BASE_URL}/Update?*`,
+	ASSIGN: `${TICKETS_BASE_URL}/TicketReassign?*`,
 };
 // NOTE: ensure that host_permissions are granted for each of these paths.
 const exportDefault: Array<ToggleableFeature> = [
@@ -329,7 +330,6 @@ const exportDefault: Array<ToggleableFeature> = [
 		],
 	},
 	{
-		// todo: not working
 		name: "TDX/Ticket/View/Get Cerebro data",
 		description: "Shows key info about a person from Cerebro.\nDisplays their types and relevant roles as well as a summary of any red and yellow flags detected on their account.",
 		contentScripts: [
@@ -350,6 +350,37 @@ const exportDefault: Array<ToggleableFeature> = [
 			{
 				url: `${TICKETS_BASE_URL}/TicketSearch*`,
 				script: "tdx/ticket/cs33.ts",
+			},
+		],
+	},
+	{
+		name: "TDX/Themes/Dark",
+		description: "Puts TDX in dark mode.",
+		contentScripts: [
+			{
+				url: `${BASE_URL}/*`,
+				css: "dark.css",
+				script: undefined,
+			},
+		],
+	},
+	{
+		name: "TDX/Ticket/Assign/Ctrl+Enter to submit",
+		description: "Allows you to press Ctrl+Enter to quickly save the assignment of a ticket.",
+		contentScripts: [
+			{
+				url: TICKET_URL.ASSIGN,
+				script: "tdx/ticket/assign/cs40.ts",
+			},
+		],
+	},
+	{
+		name: "TDX/Ticket/Assign/Auto focus",
+		description: "Automatically focuses the New Responsibility input box once the assign screen is opened.",
+		contentScripts: [
+			{
+				url: TICKET_URL.ASSIGN,
+				script: "tdx/ticket/assign/cs41.ts",
 			},
 		],
 	},

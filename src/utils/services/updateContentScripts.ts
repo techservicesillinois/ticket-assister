@@ -313,18 +313,31 @@ async function registerContentScriptByRuleName(ruleName: string) {
  */
 async function registerContentScript(rule: ToggleableFeature) { //: Promise<RegisteredContentScript>
 	//try {
-		const getContentScriptRegistration = (matchesUrl: string, scriptPath: string) => ({
+		const getContentScriptRegistrationJs = (matchesUrl: string, scriptPath: string): browser.Scripting.RegisteredContentScript => ({
 			id: getRuleContentScriptId(rule.name, scriptPath),
-			//allFrames: true,
-			//css: { file: "/path", code: "body{color:blue;}"},
 			matches: [matchesUrl],
 			js: [`scripts/contentScripts/${changeExtension(scriptPath, "js")}`],
 			runAt: <browser.ExtensionTypes.RunAt>"document_end",
 			//world: "MAIN",
 		});
-		const contentScriptRegistrations = [];
+		const getContentScriptRegistrationCss = (matchesUrl: string, scriptPath: string): browser.Scripting.RegisteredContentScript => ({
+			id: getRuleContentScriptId(rule.name, scriptPath),
+			matches: [matchesUrl],
+			css: [`themes/${scriptPath}`],
+			allFrames: true,
+			runAt: <browser.ExtensionTypes.RunAt>"document_end",
+			//world: "MAIN",
+		});
+		const contentScriptRegistrations: Array<browser.Scripting.RegisteredContentScript> = [];
 		for (const contentScript of rule.contentScripts) {
-			contentScriptRegistrations.push(getContentScriptRegistration(contentScript.url, contentScript.script));
+			if (contentScript.script !== undefined) {
+				contentScriptRegistrations.push(getContentScriptRegistrationJs(contentScript.url, contentScript.script));
+			} else if (contentScript.css !== undefined) {
+				contentScriptRegistrations.push(getContentScriptRegistrationCss(contentScript.url, contentScript.css));
+			} else {
+				// this should have been caught in testing
+				log.e(`Content script in rule ${rule.name} has neither a script nor a css defined!`);
+			}
 		}
 		await browser.scripting.registerContentScripts(contentScriptRegistrations);
 		log.i(`Registered ${contentScriptRegistrations.length} content script${contentScriptRegistrations.length === 1 ? "" : "s"} for rule ${rule.name}`);

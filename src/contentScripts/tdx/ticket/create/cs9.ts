@@ -12,6 +12,6 @@ formChangeListen(async () => {
     try {
         submitOnCtrlEnter(await getWysiwygBody(), getSaveButton());
     } catch {
-        log.e("Failed to add submit on ctrl enter listener to wysiwyg body");
+        log.e("Failed to add submit on ctrl enter listener on wysiwyg body");
     }
 });

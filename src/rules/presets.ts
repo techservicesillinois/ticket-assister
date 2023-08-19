@@ -49,6 +49,9 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Update/Prefill response": false,
 		"TDX/Ticket/View/Get Cerebro data": false,
 		"TDX/Ticket/Search/Auto select all statuses": false,
+		"TDX/Themes/Dark": false,
+		"TDX/Ticket/Assign/Ctrl+Enter to submit": false,
+		"TDX/Ticket/Assign/Auto focus": false,
 	},
 	"Default": {
 		"Cerebro/flagger/Alert/Red": false,
@@ -83,6 +86,9 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Update/Prefill response": true,
 		"TDX/Ticket/View/Get Cerebro data": true,
 		"TDX/Ticket/Search/Auto select all statuses": true,
+		"TDX/Themes/Dark": false,
+		"TDX/Ticket/Assign/Ctrl+Enter to submit": false,
+		"TDX/Ticket/Assign/Auto focus": true,
 	},
 	"Non-TSHD Default": {
 		"Cerebro/flagger/Alert/Red": false,
@@ -117,6 +123,9 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Update/Prefill response": true,
 		"TDX/Ticket/View/Get Cerebro data": false,
 		"TDX/Ticket/Search/Auto select all statuses": true,
+		"TDX/Themes/Dark": false,
+		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
+		"TDX/Ticket/Assign/Auto focus": true,
 	},
 	"Recommended": {
 		"Cerebro/flagger/Alert/Red": false,
@@ -151,6 +160,9 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Update/Prefill response": true,
 		"TDX/Ticket/View/Get Cerebro data": true,
 		"TDX/Ticket/Search/Auto select all statuses": true,
+		"TDX/Themes/Dark": false,
+		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
+		"TDX/Ticket/Assign/Auto focus": true,
 	},
 	"All On": {
 		"Cerebro/flagger/Alert/Red": true,
@@ -185,6 +197,9 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Update/Prefill response": true,
 		"TDX/Ticket/View/Get Cerebro data": true,
 		"TDX/Ticket/Search/Auto select all statuses": true,
+		"TDX/Themes/Dark": true,
+		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
+		"TDX/Ticket/Assign/Auto focus": true,
 	},
 	"Custom": {},
 };

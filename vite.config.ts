@@ -43,4 +43,11 @@ export default defineConfig({
             },
         },
     },
+    test: {
+        // specify repo root for testing
+        // so it knows where to store its metadata in node_modules
+        // todo: this won't work
+        // because it confuses the absolute path aliases
+        //root: __dirname,
+    },
 });

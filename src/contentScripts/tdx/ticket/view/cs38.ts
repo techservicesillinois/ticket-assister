@@ -16,10 +16,10 @@ if (document.referrer.substring(0, CREATED_BASE_URL.length) === CREATED_BASE_URL
                     const status = await getTicketStatusBg(currTicketNumber);
                     if (status === "Open") {
                         await takeResponsibilityBg(currTicketNumber)
-                        log.d(`Took responsibility of tdx#${currTicketNumber}`);
+                        log.i(`Took responsibility of tdx#${currTicketNumber}`);
                     } else {
                         await assignResponsibilityBg(currTicketNumber, currentPerson);
-                        log.d(`Assigned responsibility of tdx#${currTicketNumber} to current person (${currentPerson.name})`);
+                        log.i(`Assigned responsibility of tdx#${currTicketNumber} to current person (${currentPerson.name})`);
                     }
                     // now, visually update
                     window.location.reload();

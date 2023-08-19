@@ -85,7 +85,7 @@ function addIf(array: Array<CerebroDatum>, search: { section: string, key: strin
 		if (addOnNotFound) {
 			array.push({
 				location: location,
-				note: `Failed to check ${search.key}`,
+				note: "Failed to check",
 			});
 		}
 	} else if (test(value)) {
@@ -185,18 +185,19 @@ export function getYellowInfo() {
 		return today.getTime() - (new Date(value)).getTime() < ONE_DAY;
 	}, false); // do not add if not found: this is normal
 	addIf(yellowInfo, { section: "Google Apps @ Illinois", key: "Account Status", }, "Google Apps not enabled", value => value === "disabled");
-	addIf(yellowInfo, { section: "U of I Box", key: "Account Status", }, "Box not enabled", value => value === "disabled");
+	addIf(yellowInfo, { section: "U of I Box", key: "Account Status", }, "Box not enabled", value => (value === "eligible (not configured)" || value === "eligible" || value === "disabled"));
 	addIf(yellowInfo, { section: "NetID Claim", key: "Claim Eligible Status", }, "Not claimed", value => value === "Yes");
 	try {
-		getInboxRules().forEach(inboxRule => {
+		for (const inboxRule of getInboxRules()) {
 			// forwardTo will also deliver to this mailbox so is ok
 			if (inboxRule.actions.indexOf("redirectTo") !== -1) {
 				yellowInfo.push({
 					location: "Inbox Rules",
 					note: "Redirecting mail",
 				});
+				break; // only check for one redirection
 			}
-		});
+		}
 	} catch {
 		yellowInfo.push({
 			location: "Inbox Rules",
@@ -273,6 +274,9 @@ export function getRedInfo(): Array<CerebroDatum> {
 					note: "Failed to check inbox existance",
 				});
 			}
+		} else if (accountTypes.includes("degree")) {
+			addIf(redInfo, { section: "Central Registry", key: "Illinois Email Delivery" }, "Blank", value => value === "");
+			addIf(redInfo, { section: "Central Registry", key: "Illinois Email Delivery", }, "Not set", value => value === "Email Forwarding not set");
 		}
 	} catch {
 		redInfo.push({
@@ -281,10 +285,10 @@ export function getRedInfo(): Array<CerebroDatum> {
 		});
 	}
 
-	addIf(redInfo, { section: "Active Directory (AD)", key: "Password Last Set" }, "Not set", value => value === "Never");
+	addIf(redInfo, { section: "Active Directory (AD)", key: "Password Last Set" }, "Expired or never set", value => value === "Never");
 	const FIFTEEN_MINUTES = 15 * 60 * 1000; // ms
-	addIf(redInfo, { section: "Active Directory (AD)", key: "Password Last Set" }, "Not set", value => {
-		const pwSetOn = new Date(valueFor("Active Directory (AD)", "Password Last Set"));
+	addIf(redInfo, { section: "Active Directory (AD)", key: "Password Last Set" }, "Recently set", value => {
+		const pwSetOn = new Date(value);
 		return (Date.now() - pwSetOn.getTime() < FIFTEEN_MINUTES);
 	});
 

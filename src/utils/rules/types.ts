@@ -42,11 +42,30 @@ export interface ToggleableFeature {
          * To be ran in the foreground
          * whenever `url` is navigated to
          * and the feature is enabled
+         * 
+         * Either {@link script} or {@link css} must be defined,
+         * but not both.
          *
          * @remarks
          * The associated script should have the first line like
          * // <rule name="rule.name">
+         * 
+         * If no script, must explicitly set `undefined`.
          */
-        script: string,
+        script: string | undefined,
+        /**
+         * The filesystem path to the CSS file
+         * Relative from `static/themes/`
+         *
+         * Should include the file extension.
+         *
+         * To be ran in the foreground
+         * whenever `url` is navigated to
+         * and the feature is enabled
+         * 
+         * Either {@link script} or {@link css} must be defined,
+         * but not both.
+         */
+        css?: string,
     }>,
 }

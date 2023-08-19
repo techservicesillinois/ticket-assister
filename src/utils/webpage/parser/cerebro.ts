@@ -77,14 +77,14 @@ export function getInboxRules(): Array<InboxRule> {
 	if (firstLine === null) {
 		throw new DomParseError();
 	}
-	if (bod.children.length === 4 && firstLine.textContent?.trim() === "None") {
+	if (bod.children.length === 4 && firstLine?.textContent?.trim() === "None") {
         // no inbox rules
         return inboxRules;
     }
 	// todo verify that the data looks good and throw if not
 	for (let i = 3; i < bod.children.length; i += 3) {
-		const a = bod.children[i].children[0];
-		const b = bod.children[i].children[1];
+		const a = bod.children[i]?.children[0];
+		const b = bod.children[i]?.children[1];
 		const c = bod.children[i + 1]?.children[1]; //bod.children[i + 1].querySelector(".columnvalue")
 		const d = bod.children[i + 2]?.children[1];
 		if (
@@ -146,6 +146,10 @@ export function emailDeliveryTypo(currentDeliveryEmail: string): boolean {
 			bad: /@g\.u?i?l*in(oi|io)s\.edu/,
 			ok: /@g\.illinois\.edu$/,
 		},
+		{ // mistyped @uillinois.edu
+			bad: /@u?i?l*in(oi|io)s\.edu/,
+			ok: /@uillinois\.edu$/,
+		},
 	];
 
 	for (const { bad, ok } of patternsToCheck) {
@@ -172,6 +176,9 @@ export function emailDeliveryTypo(currentDeliveryEmail: string): boolean {
 			}
 		} else {
 			for (let i = 0; i < validEntries.length; i++) {
+				// ugh. I'm just trying to validly index this array man.
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+				// @ts-ignore
 				if (c !== validEntries[i][currentCharMatched]) {
 					mistakes[i]++;
 				}

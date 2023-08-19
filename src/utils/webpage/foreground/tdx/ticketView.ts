@@ -375,19 +375,19 @@ export function addCopyNetIDButton() {
     copyButton.style.border = "2px solid #d9edf7";
     copyButton.style.borderRadius = "10px";
 	requestorFieldLeft.appendChild(copyButton); // below the profile picture
+	copyButton.style.color = "#000";
 	if (netID === null) {
 		copyButton.disabled = true;
 		copyButton.style.backgroundColor = "#d2d9da";
 		copyButton.style.color = "#818181";
 		copyButton.style.cursor = "not-allowed";
 	} else {
-		copyButton.textContent = `Copy ${netID}`;
 		copyButton.style.cursor = "pointer";
 		copyButton.addEventListener("click", async () => {
 			navigator.clipboard.writeText(netID)
 				.then(() => {
 					log.i(`Successfully copied ${netID} to clipboard`)
-					setMessage("Copied!");
+					setMessage("Copied");
 				},
 				() => {
 					log.e(`Failed to copy ${netID} to clipboard`)
@@ -413,14 +413,11 @@ export function addOpenToolsButtons() {
 	const requestorField = getRequestorFieldPanel();
 	const netID = getClientNetID();
 	const buttonsWrapper = document.createElement("div");
-	/*buttonsWrapper.style.display = "flex";
-	buttonsWrapper.style.flexDirection = "row";
-	buttonsWrapper.style.alignItems = "stretch";*/
-	buttonsWrapper.style.display = "table-cell";
+	buttonsWrapper.style.display = "block";
 	buttonsWrapper.style.paddingLeft = "3em";
 	const buttonsWrapperInner = document.createElement("div");
 	buttonsWrapperInner.style.display = "flex";
-	buttonsWrapperInner.style.flexDirection = "column";
+	buttonsWrapperInner.style.flexDirection = "row";
 	buttonsWrapperInner.style.alignItems = "stretch";
 	buttonsWrapperInner.style.gap = "0.5em";
 

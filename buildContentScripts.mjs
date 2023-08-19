@@ -68,7 +68,7 @@ function onlyFileFlag() {
     const total = Object.keys(contentScripts).length;
     //Object.values(contentScripts).forEach(filePath => {
     for (const [entryName, filePath] of Object.entries(contentScripts)) {
-        /*if (!["cs31", "cs32"].includes(entryName.substring(entryName.lastIndexOf("/")+1))) {
+        /*if (!["cs39", "cs40", "cs41"].includes(entryName.substring(entryName.lastIndexOf("/")+1))) {
             console.warn(`SKIPPING ${entryName}`);
             continue; // dev
         }*/

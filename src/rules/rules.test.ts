@@ -5,6 +5,7 @@ import rules from "./rules";
 import { getAllFilesSync } from "../utils/fs";
 
 const contentScriptsDir = path.resolve(__dirname, "..", "contentScripts");
+const cssDir = path.resolve(__dirname, "..", "static", "themes");
 
 /**
  * Gets the absolute paths
@@ -39,10 +40,21 @@ test("Each rule should not have a duplicate name", async () => {
 test("Each rule should have a valid contentScript", async () => {
 	await Promise.all(rules.map(async rule => {
 		await Promise.all(rule.contentScripts.map(async contentScript => {
-			const scriptPath = path.resolve(contentScriptsDir, contentScript.script);
-			await expect(fs.access(scriptPath), `Content script at ${contentScript.script} not found for rule ${rule.name}`)
-				.resolves
-				.toBeUndefined(); // main thing is that it resolves
+			if (contentScript.script !== undefined) {
+				const scriptPath = path.resolve(contentScriptsDir, contentScript.script);
+				await expect(fs.access(scriptPath), `Content script at ${contentScript.script} not found for rule ${rule.name}`)
+					.resolves
+					.toBeUndefined(); // main thing is that it resolves
+				expect(contentScript.css).toBeUndefined();
+			} else {
+				expect(contentScript.css).toBeDefined();
+				if (contentScript.css !== undefined) {
+					const cssScriptPath = path.resolve(cssDir, contentScript.css);
+					await expect(fs.access(cssScriptPath), `Content script (css) at ${contentScript.css} not found for rule ${rule.name}`)
+						.resolves
+						.toBeUndefined();
+				}
+			}
 		}));
 	}));
 });

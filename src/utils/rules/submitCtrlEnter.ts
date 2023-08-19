@@ -15,14 +15,16 @@ import { log } from "utils/logger";
 export function addSubmitOnCtrlEnterHandlers() {
 	try {
 		submitOnCtrlEnter(document.body, getSaveButton());
+		log.d("Added Ctrl+Enter listener on document body");
 	} catch (e) {
-		log.e(`Failed to add submit on Ctrl+Enter listener to document body: ${e instanceof Error ? e.message : e}`);
+		log.e(`Failed to add submit on Ctrl+Enter listener on document body: ${e instanceof Error ? e.message : e}`);
 	}
 	(async () => {
 		try {
 			submitOnCtrlEnter(await getWysiwygBody(), getSaveButton());
+			log.d("Added Ctrl+Enter listener on WYSIWYG body");
 		} catch (e) {
-			log.e(`Failed to add submit on Ctrl+Enter listener to WYSIWYG body: ${e instanceof Error ? e.message : e}`);
+			log.e(`Failed to add submit on Ctrl+Enter listener on WYSIWYG body: ${e instanceof Error ? e.message : e}`);
 		}
 	})();
 }

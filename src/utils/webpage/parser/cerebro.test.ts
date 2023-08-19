@@ -39,6 +39,10 @@ describe("emailDeliveryTypo", () => {
             expect(emailDeliveryTypo("test@uic.edu")).toBe(false);
             expect(emailDeliveryTypo("netid@gmail.com")).toBe(false);
         });
+        describe("Uillinois delivery", () => {
+            // this is valid for system users
+            expect(emailDeliveryTypo("test@uillinois.edu")).toBe(false);
+        });
     });
     it("should fail when near @mx.uillinois.edu", () => {
         expect(emailDeliveryTypo("test@ilinois.edu")).toBe(true);
