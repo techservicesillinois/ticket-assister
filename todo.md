@@ -15,6 +15,8 @@
 - ensure a consistent level of logging throughout
 
 - remap hotkeys options
+- cerebro dark mode?
+- snow theme (behind buckets)
 
 - add `@src/*`, `@utils/*`, `@config`, `@rules/*` import paths
     - fix src/rules/* not allowing absolute imports (eslint)

@@ -320,10 +320,10 @@ async function registerContentScript(rule: ToggleableFeature) { //: Promise<Regi
 			runAt: <browser.ExtensionTypes.RunAt>"document_end",
 			//world: "MAIN",
 		});
-		const getContentScriptRegistrationCss = (matchesUrl: string, scriptPath: string): browser.Scripting.RegisteredContentScript => ({
-			id: getRuleContentScriptId(rule.name, scriptPath),
+		const getContentScriptRegistrationCss = (matchesUrl: string, cssPath: string): browser.Scripting.RegisteredContentScript => ({
+			id: getRuleContentScriptId(rule.name, cssPath),
 			matches: [matchesUrl],
-			css: [`themes/${scriptPath}`],
+			css: [`themes/${cssPath}`],
 			allFrames: true,
 			runAt: <browser.ExtensionTypes.RunAt>"document_end",
 			//world: "MAIN",
@@ -336,7 +336,7 @@ async function registerContentScript(rule: ToggleableFeature) { //: Promise<Regi
 				contentScriptRegistrations.push(getContentScriptRegistrationCss(contentScript.url, contentScript.css));
 			} else {
 				// this should have been caught in testing
-				log.e(`Content script in rule ${rule.name} has neither a script nor a css defined!`);
+				log.e(`Content script in rule ${rule.name} has neither a script nor a css defined! Can't register.`);
 			}
 		}
 		await browser.scripting.registerContentScripts(contentScriptRegistrations);
@@ -371,7 +371,14 @@ async function deregisterContentScriptByRuleName(ruleName: string): Promise<void
 	}
 	const ids: Array<string> = [];
 	for (const contentScript of rule.contentScripts) {
-		ids.push(getRuleContentScriptId(rule.name, contentScript.script));
+		if (contentScript.script) {
+			ids.push(getRuleContentScriptId(rule.name, contentScript.script));
+		} else if (contentScript.css) {
+			ids.push(getRuleContentScriptId(rule.name, contentScript.css));
+		} else {
+			// should have been caught earlier
+			log.e(`Content script in rule ${rule.name} has neither a script nor a css defined! Can't unregister.`);
+		}
 	}
 	await browser.scripting.unregisterContentScripts({ ids });
 	log.i(`Unregistered ${ids.length} content script${ids.length === 1 ? "" : "s"} for rule ${rule.name}`);

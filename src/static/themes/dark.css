@@ -70,9 +70,6 @@ div.panel-footer {
     color: #fff!important; /*#aaa*/
     background-color: #000!important;
 }
-.field-validation-error {
-    background: #e32621;
-}
 .input-group-btn .btn-default, .btn-file input[type=file] {
     background-color: #000!important;
 }
@@ -109,3 +106,19 @@ div.filter-section {
     background: #111!important;
     color: #ccc!important;
 }*/
+
+div.feed-child-box[data-v-db7a5ca8] {
+    background-color: #110e0c!important;
+}
+.text:active, .text:hover, .report-text:hover, report-text:active {
+    background-color: #181818!important;
+}
+
+button {
+    background-color: #000000;
+}
+
+/* tdxu */
+div[style*="background-color: wheat"] {
+    background-color: darkgoldenrod!important;
+}
