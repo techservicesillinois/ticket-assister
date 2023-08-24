@@ -199,7 +199,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/View/Hotkeys",
-		description: "Enables the following keyboard shortcuts when not typing in an input box:\n- E => open Edit page\n- U => open Update page\n- T => Take primary responsibility (if unassigned)\n- R => Refresh ticket page\n- C => jump to Comment box",
+		description: "Enables the following keyboard shortcuts when not typing in an input box:\n- E => open Edit page\n- U => open Update page\n- R => Refresh ticket page\n- C => jump to Comment box\n- A => open Assign box",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
@@ -209,7 +209,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/View/Additional Hotkeys",
-		description: "Enables the following keyboard shortcuts when not typing in an input box:\n- A => open Assign box\n- F => jump to latest Feed activity",
+		description: "Enables the following keyboard shortcuts when not typing in an input box:\n- T => Take primary responsibility (if unassigned and open)\n- F => toggle Flag\n- D => jump to latest feeD activity",
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,

@@ -8,7 +8,7 @@ a, .btn-link {
     color: #80c0ff!important;
 }
 
-.control-label, h1, h2, label {
+.control-label, h1, h2, label, h3, h4, h5, h6 {
     color: #bebebe!important;
 }
 div.white-bg {
@@ -121,4 +121,21 @@ button {
 /* tdxu */
 div[style*="background-color: wheat"] {
     background-color: darkgoldenrod!important;
+}
+
+.feed-item-text *[style*="color: #000000"] {
+    /* todo: this will fail to whiten some dark text */
+    /* could write some JS to detect dark colors */
+    color: #fff!important;
+}
+#divDescription > div *[style*="color: #000000"] {
+    color: #fff!important;
+}
+.Module {
+    background-color: #080909!important;
+}
+
+#divDescription a, .feed-item-text a {
+    /*text-decoration: underline;*/
+    color: #80c0ff!important;
 }

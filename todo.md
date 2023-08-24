@@ -12,6 +12,9 @@
 
 ## Backlog
 
+- move themes from static to build directory
+    - for minificatione
+
 - ensure a consistent level of logging throughout
 
 - remap hotkeys options

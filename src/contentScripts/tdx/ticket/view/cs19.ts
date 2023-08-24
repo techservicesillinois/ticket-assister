@@ -6,7 +6,7 @@ const actionsToGrayOut = [
 	"Generate Bomgar Session", "Add to My Work", "Add to Workspace", "Edit Classification", "Set Parent", "Create Parent", "Forward", "Assign Workflow",
 	"Unassign Incident", "Copy Incident", "Create Incident Template",
 	"Unassign Service Request", "Copy Service Request", "Create Service Request Template",
-	"Convert to Project Request", "Add to Calendar",
+	"Convert To Project Request", "Add to Calendar",
 ];
 try {
 	/*

@@ -49,6 +49,46 @@ export const hotkeyRules: Record<string, () => void> = {
 			window.open(getTicketUpdateUrl(getCurrentTicketNumber()), "TicketUpdate564440", "popup=1,width=992,height=700,left=459,top=160");
 		}
 	},
+	"r": () => {
+		// Refresh ticket page
+		window.location.reload();
+	},
+	"c": () => {
+		// jump to Comment box
+		const commentButton = document.querySelector("#btnComment");
+		if (commentButton === null || !(commentButton instanceof HTMLElement)) {
+			log.e("Failed to open comment section");
+		} else {
+			if (commentButton.style.display !== "none") {
+				commentButton.click();
+			} else {
+				try {
+					scrollIntoViewWithHeader(getCommentBox());
+				} catch {
+					log.e("Failed to scroll to comment section");
+				}
+				// comments already open
+				// focus
+				// todo this isn't working
+				// also tdx's wysiwyg is so weird
+				// iframeEl.contentWindow.focus(); 
+				// iframeEl.contentDocument.body.click(); 
+			}
+		}
+	},
+	"a": () => {
+		// Assign (reassign/escalate)
+		const reassignButton = document.querySelector("#divReassignTicket");
+		if (reassignButton === null || !(reassignButton instanceof HTMLElement)) {
+			log.e("Failed to scroll to top of feed section");
+			return;
+		} else {
+			// fallback
+			window.open(`${TICKETS_BASE_URL}/TicketReassign?TicketID=${getCurrentTicketNumber()}`, "TicketAssign564440", "popup=1,width=992,height=700,left=459,top=160");
+		}
+	},
+};
+export const hotkeyRules2: Record<string, () => void> = {
 	"t": () => {
 		const takeButton = document.querySelector("#btnTakeTicket");
 		// only run if this is an option
@@ -83,54 +123,31 @@ export const hotkeyRules: Record<string, () => void> = {
 		}
 		*/
 	},
-	"r": () => {
-		// Refresh ticket page
-		window.location.reload();
-	},
-	"c": () => {
-		// jump to Comment box
-		const commentButton = document.querySelector("#btnComment");
-		if (commentButton === null || !(commentButton instanceof HTMLElement)) {
-			log.e("Failed to open comment section");
-		} else {
-			if (commentButton.style.display !== "none") {
-				commentButton.click();
-			} else {
-				try {
-					scrollIntoViewWithHeader(getCommentBox());
-				} catch {
-					log.e("Failed to scroll to comment section");
-				}
-				// comments already open
-				// focus
-				// todo this isn't working
-				// also tdx's wysiwyg is so weird
-				// iframeEl.contentWindow.focus(); 
-				// iframeEl.contentDocument.body.click(); 
-			}
-		}
-	},
-};
-export const hotkeyRules2: Record<string, () => void> = {
-	"a": () => {
-		// Aassign (reassign/escalate)
-		const reassignButton = document.querySelector("#divReassignTicket");
-		if (reassignButton === null || !(reassignButton instanceof HTMLElement)) {
-			log.e("Failed to scroll to top of feed section");
-			return;
-		} else {
-			// fallback
-			window.open(`${TICKETS_BASE_URL}/TicketReassign?TicketID=${getCurrentTicketNumber()}`, "TicketAssign564440", "popup=1,width=992,height=700,left=459,top=160");
-		}
-	},
-	"f": () => {
-		// jump to latest Feed activity
+	"d": () => {
+		// jump to latest feeD activity
 		const feedBox = document.querySelector("#ticketFeed");
 		if (feedBox === null || !(feedBox instanceof HTMLElement)) {
 			log.e("Failed to scroll to top of feed section");
 			return;
 		}
 		scrollIntoViewWithHeader(feedBox);
+	},
+	"f": () => {
+		// toggle Flag
+		//const flagButton = document.querySelector("#btnToggleFlag");
+		/*if (flagButton !== null && flagButton instanceof HTMLElement) {
+			flagButton.click(); // toggled!
+			log.i("Toggled flag.");
+		} else {
+			doPostBack("btnToggleFlag","");
+			log.w("Could not find flag button. Doing fallback postBack");
+		}*/
+
+		// chrome says: "Refused to run the JavaScript URL because it violates the following Content Security Policy directive"
+		// so just do this
+		// this will also annoyingly refresh the page *sigh*
+		doPostBack("btnToggleFlag","");
+		log.i("Toggled flag.");
 	},
 };
 
