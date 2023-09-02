@@ -308,7 +308,7 @@ export function getClientNetID(): string | null {
  *
  * @throws {@link DomParseError}
  */
-function getRequestorFieldPanel() {
+export function getRequestorFieldPanel() {
 	const requestorFieldEl = document.querySelector(".panel-person-card .media");
 	if (requestorFieldEl === null || !(requestorFieldEl instanceof HTMLElement)) {
 		throw new DomParseError();

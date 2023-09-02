@@ -277,6 +277,16 @@ const exportDefault: Array<ToggleableFeature> = [
 			},
 		],
 	},
+	{
+		name: "TDX/Ticket/View/Highlight misconfigured requestor field",
+		description: "Draws a red box around the requestor field if it is not filled out and should be, i.e. if the address is an @illinois.edu address but the TDX account is not linked.\nThese tickets should be edited to be corrected.",
+		contentScripts: [
+			{
+				url: TICKET_URL.VIEW,
+				script: "tdx/ticket/view/cs42.ts",
+			},
+		],
+	},
 
 	{
 		name: "TDX/Ticket/Edit/Go back on save",

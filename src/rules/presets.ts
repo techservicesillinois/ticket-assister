@@ -52,6 +52,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Themes/Dark": false,
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": false,
 		"TDX/Ticket/Assign/Auto focus": false,
+		"TDX/Ticket/View/Highlight misconfigured requestor field": false,
 	},
 	"Default": {
 		"Cerebro/flagger/Alert/Red": false,
@@ -89,6 +90,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Themes/Dark": false,
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": false,
 		"TDX/Ticket/Assign/Auto focus": true,
+		"TDX/Ticket/View/Highlight misconfigured requestor field": true,
 	},
 	"Non-TSHD Default": {
 		"Cerebro/flagger/Alert/Red": false,
@@ -126,6 +128,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Themes/Dark": false,
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
 		"TDX/Ticket/Assign/Auto focus": true,
+		"TDX/Ticket/View/Highlight misconfigured requestor field": false,
 	},
 	"Recommended": {
 		"Cerebro/flagger/Alert/Red": false,
@@ -163,6 +166,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Themes/Dark": false,
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
 		"TDX/Ticket/Assign/Auto focus": true,
+		"TDX/Ticket/View/Highlight misconfigured requestor field": true,
 	},
 	"All On": {
 		"Cerebro/flagger/Alert/Red": true,
@@ -200,6 +204,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Themes/Dark": true,
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
 		"TDX/Ticket/Assign/Auto focus": true,
+		"TDX/Ticket/View/Highlight misconfigured requestor field": true,
 	},
 	"Custom": {},
 };
