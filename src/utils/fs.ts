@@ -16,7 +16,7 @@ export async function getAllFilesSync(rootDir: string): Promise<Record<string, s
      * Finds all the files in a directory recursively
      * adding them to {@link entries} in place
      */
-    function walk(currDir): void {
+    function walk(currDir: string): void {
         fs.readdirSync(currDir, { withFileTypes: true }).forEach(file => {
             const fullPath = path.join(currDir, file.name);
             const relativePath = path.relative(rootDir, fullPath);

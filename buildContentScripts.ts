@@ -1,18 +1,14 @@
-// OUT OF SYNC.
-// Use ./buildContentScripts.mjs
-
 import { build } from "vite";
 
 import * as path from "path";
 import { getAllFilesSync } from "./src/utils/fs";
-import { changeExtension } from "utils/stringParser";
-
-const __dirname = "/mnt/c/users/elijah/documents/programming/_projects/tkast/";
+import { changeExtension } from "./src/utils/stringParser";
 
 const rootDir = path.resolve(__dirname, "src");
 const contentScriptsSrcDir = path.join(rootDir, "contentScripts");
 const outDir = path.resolve(__dirname, "build");
-const contentScriptsOutDir = path.join(outDir, "scripts"); // contentScripts subdirectory added as compiles
+// contentScripts subdirectory added during compilation
+const contentScriptsOutDir = path.join(outDir, "scripts");
 
 /**
  * Returns all of the content scripts in the `contentScripts/*` directory
@@ -22,7 +18,7 @@ const contentScriptsOutDir = path.join(outDir, "scripts"); // contentScripts sub
 async function getContentScripts(): Promise<Record<string, string>> {
     return Object.fromEntries(
         Object.entries(await getAllFilesSync(contentScriptsSrcDir))
-            .map(([k, v]) => [k, changeExtension(v, "")])
+            .map(([k, v]) => [changeExtension(k, "js"), changeExtension(v, "")])
     );
 }
 
@@ -41,12 +37,16 @@ function onlyFileFlag() {
 }
 
 (async () => {
+    const contentScripts = await getContentScripts();
+    let completed = 0;
+    const total = Object.keys(contentScripts).length;
     // maybe clean contentScriptsOutDir once here?
     //Object.values(getContentScripts()).forEach(filePath => {
-    for (const [entryName, filePath] of Object.entries(await getContentScripts())) {
-        console.log(`Compiling ${filePath}`);
+    for (const [entryName, filePath] of Object.entries(contentScripts)) {
+        console.log(`Compiling [${++completed}/${total}] ${filePath}`);
         await build({
-            mode: process.env.NODE_ENV === "development" ? "development" : undefined, // use default: production
+            // if no environment specified, use default: production
+            mode: process.env.NODE_ENV === "development" ? "development" : undefined,
             resolve: {
                 alias: {
                     //"@src": rootDir,
@@ -77,8 +77,8 @@ function onlyFileFlag() {
                     input: { [entryName]: filePath },
                     output: {
                         // relative to contentScriptsOutDir
-                        entryFileNames: "[name].js",
-                        chunkFileNames: "[name]-[hash].js",
+                        entryFileNames: "contentScripts/[name]",
+                        chunkFileNames: "contentScripts/[name]-[hash]",
                         format: "iife",
                         // no imports
                         inlineDynamicImports: false,

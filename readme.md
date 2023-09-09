@@ -1,4 +1,4 @@
-# Ticket Assister
+# Ticket Assister for TeamDynamix
 
 > Helping you handle TDX tickets more efficiently.
 
@@ -6,18 +6,23 @@
 
 ## Info
 
-Ticket Assister (stylized TkAst) optimizes your workflow with TDX tickets by setting defaults, filling out forms, and consolidating information.
+Ticket Assister (stylized TkAst) optimizes your workflow with TeamDynamix (TDX) tickets by setting defaults, filling out forms, and consolidating information.
 It reduces your cognitive load so that you can focus on getting work done accurately and efficiently.
 
 It has many features, all of which can be toggled on and off in the Options page.
 
 ## Building/Deployment
 
-0. Make sure that `package.json` and `manifest.json` have their version numbers bumped
+0. Install deps
+
+    - install `npm`
+    - `npm install` project dependencies
+
+1. Make sure that `package.json` and `manifest.json` have their version numbers bumped
 
     - Extension web stores will reject the build if it is the same version number as the current uploaded version
 
-1. `npm run build`
+2. `npm run build`
 
     - This will build for production, i.e. for URLs at https://help.uillinois.edu/TDNext/*
 
@@ -31,7 +36,7 @@ It has many features, all of which can be toggled on and off in the Options page
             - this builds each of the content scripts
             - each script is packaged as an IIFE to allow turning the features on and off at runtime
 
-2. Zip the output files
+3. Zip the output files
 
     1. Zip all of the files from the `build/` directory.
     *Do not zip the `build` directory in itself. Only the contents.*
@@ -49,7 +54,7 @@ It has many features, all of which can be toggled on and off in the Options page
 
         - This directory is ignored from source control
 
-3. Upload package to the relevant extension store
+4. Upload package to the relevant extension store
 
     - Upload the zip file and Submit for Review
 

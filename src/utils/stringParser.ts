@@ -42,7 +42,7 @@ export function stringBeginsWith(str: string, beginning: string): boolean {
  * If the {@param newExtension} is empty, it will remove the extension from the {@param path}.
  */
 export function changeExtension(path: string, newExtension: string): string {
-    const pathWithoutExtension = path.replace(/\.[^.]*$/, '');
+    const pathWithoutExtension = path.replace(/\.[^.]*$/, "");
     if (newExtension === "") {
         // no trialing dot.
         return `${pathWithoutExtension}`;
