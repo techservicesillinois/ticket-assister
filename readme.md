@@ -66,3 +66,15 @@ It has many features, all of which can be toggled on and off in the Options page
     - This verifies that all of the content scripts ("rules") are properly associated
     - This runs basic tests on helper functions
     - These tests are not yet comprehensive i.e. do not include integration tests with Playwright
+
+## End of Life
+
+This product is supported by Elijah Mock, Cybersecurity, and Technology Services on a best-effort basis.
+
+As of the last update to this README, the expected End-of-Life and End-of-Support dates of this product are February 2024.
+
+End-of-Life was decided upon based on these dependencies:
+
+    Chrome Manifest V3 (undocumented; expected January 2025 or later based on V2 retirement timeline)
+    TeamDynamix (quarterly; possible breaking changes February 2024)
+    Cerebro (unknown; dynamic release schedule)

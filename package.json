@@ -22,5 +22,5 @@
     "webextension-polyfill": "^0.10.0"
   },
   "author": "Elijah Mock",
-  "license": "GNU GPLv3"
+  "license": "NCSA"
 }
