@@ -55,6 +55,19 @@ It has many features, all of which can be toggled on and off in the Options page
 
     - Upload the zip file and Submit for Review
 
+### Automated Deployment
+
+This resository can deploy automatically to the Chrome Web store. 
+
+> To deploy automatically to the Chrome Web Store, push a tag to the `main` branch.
+
+As of September of 2023, this repository is configured to continue to deploy under the original 'Alpo' developer account. This may change in the future.
+
+To allow automatic deployment to the Chrome Web Store, add a GitHub repository variable `CHROME_ITEM_ID` with the ID of the Chrome plugin; 
+and a GitHub repository secret `CHROME_TOKEN` set to a Chrome Webstore API key auth token.
+
+See [Using the Webstore API](https://developer.chrome.com/docs/webstore/using_webstore_api/) for guidance on creating the auth token.
+
 ## Testing
 
 `npm run test`
