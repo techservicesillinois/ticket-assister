@@ -44,12 +44,9 @@ It has many features, all of which can be toggled on and off in the Options page
     2. Name the zipped file
     
         - For Chrome, `YYYYMMDD_tkast_X.Y.Z.zip`
-
-        - For Firefox, `YYYYMMDD_tkast_X.Y.Z-f.zip`
-
         - `YYYYMMDD` is the current date (which the files were built)
         - `X.Y.Z` is the version number
-    
+
     3. Save the zip file in the `releases/` directory
 
         - This directory is ignored from source control
