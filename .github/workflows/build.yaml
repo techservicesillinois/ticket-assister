@@ -21,6 +21,9 @@ jobs:
     - name: Build Package
       run: |
         make build
+    - name: Zip Package
+      run: |
+        make release
     - name: Store build as an artifact
       uses: actions/upload-artifact@v3
       with:
