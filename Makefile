@@ -12,7 +12,7 @@ publish: releases/latest.zip
 release: releases/latest.zip
 
 releases/latest.zip: build
-	cd build && zip -D -r ../$@ .
+	mkdir releases -p && cd build && zip -D -r ../$@ .
 
 build: node_modules
 	npm run build
