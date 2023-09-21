@@ -77,6 +77,11 @@ See [Using the Webstore API](https://developer.chrome.com/docs/webstore/using_we
     - This runs basic tests on helper functions
     - These tests are not yet comprehensive i.e. do not include integration tests with Playwright
 
+## Contributing
+
+Issues and PRs are welcome.
+See [CONTRIBUTING.md](/CONTRIBUTING.md) to get started.
+
 ## End of Life
 
 This product is supported by Elijah Mock, Cybersecurity, and Technology Services on a best-effort basis.
