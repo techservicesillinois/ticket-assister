@@ -6,9 +6,42 @@ Please review the [Code of Conduct](/CODE_OF_CONDUCT.md) before contributing.
 
 For vulnerabilities, please see our [Security documentation](./SECURITY.md).
 
+## Orientation
+
+> An overview of the project structure and select files
+
+### Organization
+
+Everything at the root directory is configuration stuff:
+
+- `package.json` contains dependencies and scripts
+- `Makefile` mainly runs `package.json` scripts
+- `readme.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and `SECURITY.md` are all standard
+- `vite.config.ts` controls the main build output
+- `buildContentScripts.ts` controls the content script build output
+
+`src/` contains the bulk of the code:
+
+- `contentScripts` is where all of the content scripts, which are injected into pages, are located
+	- subdirectories are organized by category and are typically the beginning part of the rule name
+- `pages` is where all of the static pages are located
+	- These are pages which are accessible from the extension's base url
+	- This includes the `index.html` file which is the `default_popup`, meaning that it is displayed when the extension bubble is clicked
+- `rules` contains the `rules.ts` and `presets.ts` files which register all of the available rules
+- `static` has static files which are simply copied to the `build` directory
+	- `img` has images and icons
+	- `themes` has the CSS for theme rules
+	- `windowScripts` is for scripts which specifically need access to the `window` object and are directly injected
+		- They are kind of a workaround for some things and should be avoided at all costs as they are not compiled
+	- `manifest.json` contains the Chrome manifest file
+- `utils` contains all utility functions that are called in other places
+- `serviceWorker.ts` is the [service worker](https://developer.chrome.com/docs/workbox/service-worker-overview/), ran in the background
+	- It imports and runs files from `src/utils/services`
+- `config.ts` has some global configuration variables referenced within the code
+
 ## Contributing code
 
-Below are common code tasks and basic rules for how to complete them.
+> Some common code tasks and basic guidlines for how to implement them.
 
 ### Adding a new toggleable feature (rule)
 
