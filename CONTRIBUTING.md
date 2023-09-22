@@ -12,23 +12,24 @@ For vulnerabilities, please see our [Security documentation](./SECURITY.md).
 
 ### Entrypoints
 
-Code is built into `build/` which is loaded by the browser.
+Code is built into `build/`, which is loaded by the browser.
 
 According to the [Chrome manifest file]((https://developer.chrome.com/docs/extensions/mv3/manifest/)), `manifest.json`:
 - `src/serviceWorker` is started as a background script ([service worker](https://developer.chrome.com/docs/workbox/service-worker-overview/)) 
 	- This is compiled into `build/scripts/serviceWorker.js`
-- `src/pages/index.html` is displayed whenclicking the extension (it is marked as a [`default_popup`](https://developer.chrome.com/docs/extensions/reference/browserAction/#popup))
+- `src/pages/index.html` is displayed when clicking the extension (it is marked as the [`default_popup`](https://developer.chrome.com/docs/extensions/reference/browserAction/#popup))
 	- This is compiled into `build/pages/index.html`
 - Other `src/pages/` can be accessed from the extension's URL
-	- These must be linked to from other pages, starting with the popup (`index.html`)
+	- These should be linked to from other pages, starting with the popup (`index.html`)
 	- These are compiled into `build/pages/`
-- [Content scripts](https://developer.chrome.com/docs/extensions/mv3/content_scripts/) are ran on page load if they are toggled on
+- [Content scripts](https://developer.chrome.com/docs/extensions/mv3/content_scripts/) are ran on page load, if they are enabled
+	- These must be enabled in the Options page for them to run, which is accessible by clicking the extension and choosing "Options"
 	- See `src/rules/rules.ts` to see which scripts are ran on which pages
-	- Note that these must be enabled in the Options page for them to run, which is accessible by clicking the extension and choosing "Options"
+		- This information can also be seen on the Options page
 
 ### Organization
 
-Everything at the root directory is configuration stuff:
+Files at the root directory are configuration stuff:
 
 - `package.json` contains dependencies and scripts
 - `Makefile` mainly runs `package.json` scripts
@@ -57,7 +58,7 @@ Everything at the root directory is configuration stuff:
 
 ## Manual Testing
 
-After making a build (see [readme](/readme.md) for details), you can test the extension functionality as follows:
+After making a build (see [readme](/readme.md#buildingdeployment) for details), you can install the extension locally.
 
 1. Navigate to [chrome://extensions](chrome://extensions)
 
@@ -65,13 +66,13 @@ After making a build (see [readme](/readme.md) for details), you can test the ex
 
 3. Choose "Load unpacked"
 
-4. Select the `build` folder
+4. Select the `build` folder within this project's directory
 
-Now, you can test the extension by clicking on it to view the pages, and by navigating to applicable sites and seeing the content scripts ran.
+Now, you can test the extension by clicking on the extension bubble to view the pages and by navigating to applicable sites where the content scripts are ran.
 
-Note that if you have a development build, the URL on which the rules are ran is different. View the service worker logs (choose "Inspect views: service worker" at [chrome://extensions](chrome://extensions)) to check which URL is the `BASE_URL` from which content scripts are set to run on.
+Note that the URL on which the rules are ran depends on the build target, namely, a production build will run on pages different than a developement build. View the service worker logs (choose "Inspect views: service worker" at chrome://extensions) to check which URL is the `BASE_URL` from which content scripts are set to run on.
 
-Note that after making any changes, you will need to rebuild the project *and* click the refresh icon at [chrome://extensions](chrome://extensions) for changes to be processed.
+Note that after making any changes, you will need to rebuild the project *and* click the refresh icon at chrome://extensions for changes to be processed.
 
 ## Contributing code
 
@@ -87,7 +88,7 @@ They are referred to as "rules" internally.
 	- Each rule's scope should be single-focused
 	- If it has multiple features, it should be broken up into two rules
 	- A rule may run multiple scripts on different pages, but they should only be bundled in one rule if they are dependent on each other
-	and are tied in one single purpose
+	and are tied in one unified purpose
 
 2. Determine a name for the rule
 
@@ -110,7 +111,7 @@ They are referred to as "rules" internally.
 			- E.g., if the latest content script is named `cs30.ts`, the new one should be named `cs31.ts`
 			- This is regardless of the directory that the file is stored in
 	- `import`s should be relative to `src`
-	- Multiple scripts may be related to a single rule; remember to keep them to a single purpose
+	- Multiple scripts may be related to a single rule; remember to keep them to a unified purpose
 
 	Implement CSS, if applicable:
 
@@ -122,16 +123,17 @@ They are referred to as "rules" internally.
 
 	- Add a `name` according to the name of the rule determined in step 1
 	- Add a `description`
-		- This is displayed below on the options page
 		- This should describe the user-facing functionality of the rule
+		- This is displayed below the name on the options page
 	- Populate the `contentScripts`
 		- Each entry should have:
 			1. `url` - The URL to run on. Matches wildcard `*`. Try to reuse this if possible, using the `TICKET_URL` object.
 			2. (optional) `script` - The path of the uncompiled content script to run, relative from the `src/contentScripts` directory
 			3. (optional) `css` - The path of the CSS to run, relative from the `static/themes` directory
-			- The `script` key [inclusive] or the `css` key must be set.
+			- The `script` key [exclusive] or the `css` key must be set
+				- If a `script` and `css` is needed, put each in a separate entry
 		- Multiple entries can be set for a single rule
-			- E.g., a script can be to run on two different pages for the rule
+			- E.g., a script can be set to run on two different pages
 			- These are bundled and all turned on/off as the feature is toggled
 
 5. Set the rule's defaults in `src/rules/presets.ts`
@@ -139,6 +141,6 @@ They are referred to as "rules" internally.
 	- Must be `false` for "All Off" and `true` for "All On"
 	- Generally:
 		- Should be `true` for "Non-TSHD Default" only if it is a feature that is nearly essential or would make sense to have been a built-in feature
-		- Should be `true` for "Default" if it is true for "Non-TSHD Default" or if it would be acutely useful for Help Desk employees
+		- Should be `true` for "Default" if it is `true`` for "Non-TSHD Default" *or* if it would be acutely useful for Help Desk employees
 		- Should be `true` for "Recommended" if it would be useful for most users
 	- The setting for the remaining presets may be requested to be changed by the team

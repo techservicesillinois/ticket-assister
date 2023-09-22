@@ -25,11 +25,12 @@ It has many features, all of which can be toggled on and off in the Options page
 2. `npm run build`
 
     - This will build for production, i.e. for URLs at https://help.uillinois.edu/TDNext/*
+        - To build for development, run `npm run build:dev`
 
     - This will generate files in the `build/` directory
         - As a side effect, all previous files in the `build` directory will be removed
     
-    - Two main scripts are ran in this command
+    - Two main scripts are ran in this command:
         1. `vite build`
             - this builds the pages, e.g. the Options page and the default popup (index) page
         2. `node buildContentScripts.mjs`
@@ -70,12 +71,17 @@ See [Using the Webstore API](https://developer.chrome.com/docs/webstore/using_we
 
 ## Testing
 
-`npm run test`
+### Automatic testing
 
-- This runs all unit tests
-    - This verifies that all of the content scripts ("rules") are properly associated
-    - This runs basic tests on helper functions
-    - These tests are not yet comprehensive i.e. do not include integration tests with Playwright
+Run unit tests with `npm run test`
+
+- This verifies that all of the content scripts ("rules") are properly associated
+- This runs basic tests on helper functions
+- These tests are not yet comprehensive, i.e., they do not include integration tests
+
+### Manual testing
+
+To install locally and manually test the extension, see [CONTRIBUTING.md](/CONTRIBUTING.md#manual-testing)
 
 ## Contributing
 
