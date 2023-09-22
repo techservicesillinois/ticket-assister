@@ -144,3 +144,36 @@ They are referred to as "rules" internally.
 		- Should be `true` for "Default" if it is `true`` for "Non-TSHD Default" *or* if it would be acutely useful for Help Desk employees
 		- Should be `true` for "Recommended" if it would be useful for most users
 	- The setting for the remaining presets may be requested to be changed by the team
+
+### Writing tests
+
+> How to write tests
+
+#### Unit tests
+
+Unit tests should be located in a file named `FILE.test.ts` for an associated `FILE.ts`.
+
+[Vitest](https://vitest.dev/) is used for testing.
+The `describe`, `test`, and `expect` terminology are to be used for suites, tests, and assertions, respectively.
+
+Run unit tests with `npm run test.`
+
+Starter code:
+```ts
+import { describe, test, expect } from "vitest";
+
+describe("SUITE NAME", () => {
+    test.todo("TEST NAME");
+	/*
+	test("TEST NAME", () => {
+		expect(true).toBe(true);
+	});
+	*/
+});
+```
+
+You may find functions from `utils/stringParser` useful for testing code.
+
+#### Integrations tests
+
+An integration testing framework has not been set up at this time.
