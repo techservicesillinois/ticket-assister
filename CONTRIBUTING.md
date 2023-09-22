@@ -10,6 +10,22 @@ For vulnerabilities, please see our [Security documentation](./SECURITY.md).
 
 > An overview of the project structure and select files
 
+### Entrypoints
+
+Code is built into `build/` which is loaded by the browser.
+
+According to the [Chrome manifest file]((https://developer.chrome.com/docs/extensions/mv3/manifest/)), `manifest.json`:
+- `src/serviceWorker` is started as a background script ([service worker](https://developer.chrome.com/docs/workbox/service-worker-overview/)) 
+	- This is compiled into `build/scripts/serviceWorker.js`
+- `src/pages/index.html` is displayed whenclicking the extension (it is marked as a [`default_popup`](https://developer.chrome.com/docs/extensions/reference/browserAction/#popup))
+	- This is compiled into `build/pages/index.html`
+- Other `src/pages/` can be accessed from the extension's URL
+	- These must be linked to from other pages, starting with the popup (`index.html`)
+	- These are compiled into `build/pages/`
+- [Content scripts](https://developer.chrome.com/docs/extensions/mv3/content_scripts/) are ran on page load if they are toggled on
+	- See `src/rules/rules.ts` to see which scripts are ran on which pages
+	- Note that these must be enabled in the Options page for them to run, which is accessible by clicking the extension and choosing "Options"
+
 ### Organization
 
 Everything at the root directory is configuration stuff:
