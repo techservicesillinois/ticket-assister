@@ -55,6 +55,24 @@ Everything at the root directory is configuration stuff:
 	- It imports and runs files from `src/utils/services`
 - `config.ts` has some global configuration variables referenced within the code
 
+## Manual Testing
+
+After making a build (see [readme](/readme.md) for details), you can test the extension functionality as follows:
+
+1. Navigate to [chrome://extensions](chrome://extensions)
+
+2. Toggle [Developer mode](https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/#load-unpacked) on, if applicable
+
+3. Choose "Load unpacked"
+
+4. Select the `build` folder
+
+Now, you can test the extension by clicking on it to view the pages, and by navigating to applicable sites and seeing the content scripts ran.
+
+Note that if you have a development build, the URL on which the rules are ran is different. View the service worker logs (choose "Inspect views: service worker" at [chrome://extensions](chrome://extensions)) to check which URL is the `BASE_URL` from which content scripts are set to run on.
+
+Note that after making any changes, you will need to rebuild the project *and* click the refresh icon at [chrome://extensions](chrome://extensions) for changes to be processed.
+
 ## Contributing code
 
 > Some common code tasks and basic guidlines for how to implement them.
