@@ -53,6 +53,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": false,
 		"TDX/Ticket/Assign/Auto focus": false,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": false,
+		"TDX/Ticket/Assign/Warn if no SRA": false,
 	},
 	"Default": {
 		"Cerebro/flagger/Alert/Red": false,
@@ -91,6 +92,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": false,
 		"TDX/Ticket/Assign/Auto focus": true,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": true,
+		"TDX/Ticket/Assign/Warn if no SRA": true,
 	},
 	"Non-TSHD Default": {
 		"Cerebro/flagger/Alert/Red": false,
@@ -129,6 +131,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
 		"TDX/Ticket/Assign/Auto focus": true,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": false,
+		"TDX/Ticket/Assign/Warn if no SRA": false,
 	},
 	"Recommended": {
 		"Cerebro/flagger/Alert/Red": false,
@@ -167,6 +170,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
 		"TDX/Ticket/Assign/Auto focus": true,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": true,
+		"TDX/Ticket/Assign/Warn if no SRA": true,
 	},
 	"All On": {
 		"Cerebro/flagger/Alert/Red": true,
@@ -205,6 +209,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
 		"TDX/Ticket/Assign/Auto focus": true,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": true,
+		"TDX/Ticket/Assign/Warn if no SRA": true,
 	},
 	"Custom": {},
 };
