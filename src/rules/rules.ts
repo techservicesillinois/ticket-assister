@@ -394,6 +394,24 @@ const exportDefault: Array<ToggleableFeature> = [
 			},
 		],
 	},
+	{
+		name: "TDX/Ticket/Close on close",
+		description: "Closes the ticket window after closing a ticket via an edit or an update.",
+		contentScripts: [
+			{
+				url: TICKET_URL.VIEW,
+				script: "tdx/ticket/view/cs44.ts",
+			},
+			{
+				url: TICKET_URL.UPDATE,
+				script: "tdx/ticket/view/cs45.ts",
+			},
+			{
+				url: TICKET_URL.EDIT,
+				script: "tdx/ticket/edit/cs46.ts",
+			},
+		],
+	},
 ];
 
 export default exportDefault; // satisfies Array<ToggleableFeature>
