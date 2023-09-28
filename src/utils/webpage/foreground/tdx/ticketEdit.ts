@@ -91,9 +91,9 @@ export function getNewStatus(): Status | undefined {
  * which is what the form is set to
  * or throws a {@link DomParseError} if not found
  */
-export function getNewStatusEl(): HTMLInputElement {
+export function getNewStatusEl(): HTMLSelectElement {
     const formStatusEl = document.querySelector(`#${getAttributeFor("Status")}`);
-    if (formStatusEl === null || !(formStatusEl instanceof HTMLInputElement)) {
+    if (formStatusEl === null || !(formStatusEl instanceof HTMLSelectElement)) {
         throw new DomParseError();
     }
     return formStatusEl;
