@@ -404,7 +404,7 @@ const exportDefault: Array<ToggleableFeature> = [
 			},
 			{
 				url: TICKET_URL.UPDATE,
-				script: "tdx/ticket/view/cs45.ts",
+				script: "tdx/ticket/update/cs45.ts",
 			},
 			{
 				url: TICKET_URL.EDIT,
