@@ -1,0 +1,1 @@
+export const CLOSE_TICKET_KEY = "ticketClosed";
