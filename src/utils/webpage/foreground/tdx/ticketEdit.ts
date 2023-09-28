@@ -2,6 +2,7 @@ import { DomParseError } from "utils/errors";
 import type { TDXPerson } from "utils/tdx/types/person";
 import type { TicketID } from "utils/tdx/types/ticket";
 import { TICKETS_BASE_URL } from "./shared";
+import { getAttributeFor } from "utils/tdx/formNames";
 /**
  * Gets the TDX ticket edit URL
  * 
@@ -70,4 +71,15 @@ export function getSaveButton() {
 		throw new DomParseError();
 	}
 	return saveEl;
+}
+
+/**
+ * Gets the new status
+ * which the form is set to
+ * or undefined if not found
+ */
+export function getNewStatus(): Status | undefined {
+    // todo
+    //document.querySelector(`#${getAttributeFor("Status")}`);
+    return undefined;
 }
