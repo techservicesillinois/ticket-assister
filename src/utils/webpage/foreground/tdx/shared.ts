@@ -1,6 +1,6 @@
 import { BASE_URL } from "config";
 import { DomParseError } from "utils/errors";
-import { Status, getStatusFromFormValue } from "utils/tdx/formNames";
+import { Status, getStatusFor } from "utils/tdx/formNames";
 import { netIDFromEmail } from "utils/tdx/types/person";
 import type { ITDXPerson } from "utils/tdx/types/person";
 import type { AtLeast } from "utils/types";
@@ -337,12 +337,9 @@ export function doPostBack(eventTarget, eventArgument) {
  * in the top right corner
  * or undefined if the element is not found
  */
-function getStatusText(): string | undefined {
-	const statusEl = document.querySelector("#thTicket_lblStatus");
-	if (statusEl === null) {
-		throw new DomParseError();
-	}
-	return statusEl.textContent ?? undefined;
+export function getStatusText(): string | undefined {
+	const statusEl = document.querySelector(".status");
+	return statusEl?.textContent?.trim() ?? undefined;
 }
 
 /**
@@ -352,5 +349,5 @@ export function getCurrentStatus(): Status | undefined {
 	const statusText = getStatusText();
 	return statusText === undefined
 		? undefined
-		: getStatusFromFormValue(statusText);
+		: getStatusFor(statusText);
 }

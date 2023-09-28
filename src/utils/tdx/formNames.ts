@@ -63,7 +63,7 @@ export function getAttributeFor<T extends keyof typeof nameToAttributeMap>(name:
  * Usage: Status["value"]
  *
  * The string representation of the enum is the TDX value
- * for {@link getAttributeFor}("Status")
+ * for {@link getStatusFor}("Status")
  *
  * @see {@link getStatusFromFormValue} for a reverse mapping
  *
@@ -91,6 +91,24 @@ export enum Status {
 export function getStatusFromFormValue(value: string): Status | undefined {
 	const enumKey = Object.keys(Status).find(
 		(key) => Status[key as keyof typeof Status] === value
+	);
+	if (enumKey !== undefined) {
+		return Status[enumKey as keyof typeof Status];
+	}
+	return undefined;
+}
+/**
+ * Returns the {@link Status} of a text representation {@param status}
+ * or undefined if it is not a status key
+ * 
+ * @see {@link getStatusFromFormValue} for reverse lookups
+ * 
+ * @todo clean this up because it is tedious
+ * and typescript will not like me
+ */
+export function getStatusFor(status: string): Status | undefined {
+	const enumKey = Object.keys(Status).find(
+		(key) => key === status
 	);
 	if (enumKey !== undefined) {
 		return Status[enumKey as keyof typeof Status];
