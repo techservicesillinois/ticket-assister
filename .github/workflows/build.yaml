@@ -29,14 +29,27 @@ jobs:
       if: ! ${{ vars.IS_RELEASE }}
       run: |
         make build-dev
-    - name: Zip Package
+    - name: Zip Package (Prod)
+      if: ${{ vars.IS_RELEASE }}
       run: |
         make release
-    - name: Store build as an artifact
+    - name: Zip Package (Dev)
+      if: ! ${{ vars.IS_RELEASE }}
+      run: |
+        make release-dev
+    - name: Store build as an artifact (Prod)
+      if: ${{ vars.IS_RELEASE }}
       uses: actions/upload-artifact@v3
       with:
         name: latest zip file
         path: ./releases/latest.zip
+        retention-days: 30
+    - name: Store build as an artifact (Dev)
+      if: ! ${{ vars.IS_RELEASE }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: latest zip file
+        path: ./releases/latest-dev.zip
         retention-days: 30
     - name: Create Release
       if: ${{ vars.IS_RELEASE }}
