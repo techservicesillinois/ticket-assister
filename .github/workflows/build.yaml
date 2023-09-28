@@ -26,7 +26,7 @@ jobs:
       run: |
         make build
     - name: Build Package (Dev)
-      if: ! ${{ vars.IS_RELEASE }}
+      if: ${{ vars.IS_RELEASE == false }}
       run: |
         make build-dev
     - name: Zip Package (Prod)
@@ -34,7 +34,7 @@ jobs:
       run: |
         make release
     - name: Zip Package (Dev)
-      if: ! ${{ vars.IS_RELEASE }}
+      if: ${{ vars.IS_RELEASE == false }}
       run: |
         make release-dev
     - name: Store build as an artifact (Prod)
@@ -45,7 +45,7 @@ jobs:
         path: ./releases/latest.zip
         retention-days: 30
     - name: Store build as an artifact (Dev)
-      if: ! ${{ vars.IS_RELEASE }}
+      if: ${{ vars.IS_RELEASE == false }}
       uses: actions/upload-artifact@v3
       with:
         name: latest zip file
