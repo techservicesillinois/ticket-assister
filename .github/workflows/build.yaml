@@ -1,5 +1,8 @@
 name: CI/CD
 
+env:
+  IS_RELEASE: startsWith(github.ref, 'refs/tags')
+
 on:
   push:
     branches:
@@ -18,20 +21,38 @@ jobs:
     - name: Tests
       run: |
         make test
-    - name: Build Package
+    - name: Build Package (Prod)
+      if: ${{ vars.IS_RELEASE }}
       run: |
         make build
-    - name: Zip Package
+    - name: Build Package (Dev)
+      if: ${{ vars.IS_RELEASE == false }}
+      run: |
+        make build-dev
+    - name: Zip Package (Prod)
+      if: ${{ vars.IS_RELEASE }}
       run: |
         make release
-    - name: Store build as an artifact
+    - name: Zip Package (Dev)
+      if: ${{ vars.IS_RELEASE == false }}
+      run: |
+        make release-dev
+    - name: Store build as an artifact (Prod)
+      if: ${{ vars.IS_RELEASE }}
       uses: actions/upload-artifact@v3
       with:
         name: latest zip file
         path: ./releases/latest.zip
         retention-days: 30
+    - name: Store build as an artifact (Dev)
+      if: ${{ vars.IS_RELEASE == false }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: latest zip file
+        path: ./releases/latest-dev.zip
+        retention-days: 30
     - name: Create Release
-      if: startsWith(github.ref, 'refs/tags')
+      if: ${{ vars.IS_RELEASE }}
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -42,7 +63,7 @@ jobs:
         draft: false
         prerelease: false
     - name: Upload Release Asset
-      if: startsWith(github.ref, 'refs/tags')
+      if: ${{ vars.IS_RELEASE }}
       id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
@@ -53,7 +74,7 @@ jobs:
         asset_name: latest.zip
         asset_content_type: application/zip
     - name: Upload to Chrome Web Store
-      if: startsWith(github.ref, 'refs/tags')
+      if: ${{ vars.IS_RELEASE }}
       run: |
         make publish
       env:

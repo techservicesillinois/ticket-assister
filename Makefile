@@ -1,4 +1,4 @@
-.PHONY: all deps test clean clean-all release publish
+.PHONY: all deps test clean clean-all release publish release-dev
 
 HEADERS:=-H "Authorization: Bearer $(CHROME_TOKEN)" -H "x-goog-api-version: 2"
 URL:=https://www.googleapis.com/upload/chromewebstore/v1.1/items
@@ -10,12 +10,20 @@ publish: releases/latest.zip
 	curl $(HEADERS) -X PUT -T $^ -v $(URL)/$(CHROME_ITEM_ID)
 
 release: releases/latest.zip
+release-dev: releases/latest-dev.zip
 
 releases/latest.zip: build
-	mkdir releases -p && cd build && zip -D -r ../$@ .
+	mkdir releases -p && cd $^ && zip -D -r ../$@ .
+
+releases/latest-dev.zip: build-dev
+	mkdir releases -p && cd $^ && zip -D -r ../$@ .
 
 build: node_modules
 	npm run build
+
+build-dev: node_modules
+	npm run build:dev
+	mv build build-dev
 
 deps: node_modules
 

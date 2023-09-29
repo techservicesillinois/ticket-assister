@@ -395,6 +395,16 @@ const exportDefault: Array<ToggleableFeature> = [
 		],
 	},
 	{
+		name: "TDX/Ticket/Assign/Warn if no SRA",
+		description: "Displays a warning box if escalating a ticket which does not have the Service Request Area field filled out.",
+		contentScripts: [
+			{
+				url: TICKET_URL.ASSIGN,
+				script: "tdx/ticket/assign/cs43.ts",
+			},
+		],
+	},
+	{
 		name: "TDX/Ticket/Close on close",
 		description: "Closes the ticket window after closing a ticket via an edit or an update.",
 		contentScripts: [
@@ -409,7 +419,7 @@ const exportDefault: Array<ToggleableFeature> = [
 			{
 				url: TICKET_URL.EDIT,
 				script: "tdx/ticket/edit/cs46.ts",
-			},
+      },
 		],
 	},
 ];

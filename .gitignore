@@ -22,6 +22,7 @@ node_modules/
 
 # build / generate output
 build/
+build-dev/
 
 # releases (production builds)
 releases/
