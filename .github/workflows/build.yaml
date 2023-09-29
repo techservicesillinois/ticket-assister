@@ -22,7 +22,7 @@ jobs:
       if: ${{ vars.IS_RELEASE == false }}
       # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable
       run: |
-        echo 'BUILD_OPT="-dev"' >> "$GITHUB_ENV"
+        echo "BUILD_OPT=-dev" >> "$GITHUB_ENV"
     - name: Tests
       run: |
         make test
