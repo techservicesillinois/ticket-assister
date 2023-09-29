@@ -49,6 +49,7 @@ export function receiveMessages(from: string, listener: (message: { to: string, 
 
 export const PIPELINE_CEREBRO_TO_TICKET = "ticket/view";
 export const PIPELINE_TICKET_TO_CEREBRO = "cerebro";
+export const PIPELINE_TO_BACKGROUND_SCRIPT = "bg";
 
 /**
  * Returns the Object of JSON

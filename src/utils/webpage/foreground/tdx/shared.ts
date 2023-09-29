@@ -1,5 +1,6 @@
 import { BASE_URL } from "config";
 import { DomParseError } from "utils/errors";
+import { Status, getStatusFor } from "utils/tdx/formNames";
 import { netIDFromEmail } from "utils/tdx/types/person";
 import type { ITDXPerson } from "utils/tdx/types/person";
 import type { AtLeast } from "utils/types";
@@ -329,4 +330,24 @@ export function doPostBack(eventTarget, eventArgument) {
 	} else {
 		return false;
 	}
+}
+
+/**
+ * Returns the text representation of the status
+ * in the top right corner
+ * or undefined if the element is not found
+ */
+export function getStatusText(): string | undefined {
+	const statusEl = document.querySelector(".status");
+	return statusEl?.textContent?.trim() ?? undefined;
+}
+
+/**
+ * Gets the current status, as told by the top right text
+ */
+export function getCurrentStatus(): Status | undefined {
+	const statusText = getStatusText();
+	return statusText === undefined
+		? undefined
+		: getStatusFor(statusText);
 }

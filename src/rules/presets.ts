@@ -53,6 +53,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": false,
 		"TDX/Ticket/Assign/Auto focus": false,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": false,
+		"TDX/Ticket/Close on close": false,
 		"TDX/Ticket/Assign/Warn if no SRA": false,
 	},
 	"Default": {
@@ -92,6 +93,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": false,
 		"TDX/Ticket/Assign/Auto focus": true,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": true,
+		"TDX/Ticket/Close on close": false,
 		"TDX/Ticket/Assign/Warn if no SRA": true,
 	},
 	"Non-TSHD Default": {
@@ -131,6 +133,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
 		"TDX/Ticket/Assign/Auto focus": true,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": false,
+		"TDX/Ticket/Close on close": false,
 		"TDX/Ticket/Assign/Warn if no SRA": false,
 	},
 	"Recommended": {
@@ -170,6 +173,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
 		"TDX/Ticket/Assign/Auto focus": true,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": true,
+		"TDX/Ticket/Close on close": false,
 		"TDX/Ticket/Assign/Warn if no SRA": true,
 	},
 	"All On": {
@@ -209,6 +213,7 @@ const presetsList: Record<string, Record<string, boolean>> = {
 		"TDX/Ticket/Assign/Ctrl+Enter to submit": true,
 		"TDX/Ticket/Assign/Auto focus": true,
 		"TDX/Ticket/View/Highlight misconfigured requestor field": true,
+		"TDX/Ticket/Close on close": true,
 		"TDX/Ticket/Assign/Warn if no SRA": true,
 	},
 	"Custom": {},

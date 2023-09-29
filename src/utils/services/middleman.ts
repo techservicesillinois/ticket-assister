@@ -1,16 +1,30 @@
-import browser from "webextension-polyfill";
+import * as browser from "webextension-polyfill";
 import { findBestTab } from "../findBestTab";
 import { log } from "utils/logger";
 import { stringBeginsWith } from "utils/stringParser";
 import { BASE_URL, CEREBRO_URL } from "config";
+import { PIPELINE_TO_BACKGROUND_SCRIPT } from "utils/webpage/link/interface";
+import { CompletedRequest, handle } from "./triggered";
 
 export default function() {
 
 browser.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
-    log.d(`Message ${request} from ${sender.url}`);
+    log.d(`Message from ${sender.url} to "${request.to}"`);
     // sender.origin
     // todo check more specific (i.e. proper page)
-    if (stringBeginsWith(sender.url, BASE_URL)) {
+    if (request.to === PIPELINE_TO_BACKGROUND_SCRIPT) {
+        // we need to handle
+        if (!("request" in request.message)) {
+            return {
+                status: "error",
+                message: "bad",
+            } satisfies CompletedRequest;
+        } else {
+            // ok to handle. valid at this point.
+            // request.message.data may be undefined; this is ok
+            return await handle(sender.tab, request.message.request, request.message.data);
+        }
+    } else if (stringBeginsWith(sender.url, BASE_URL)) { // todo check destination as well (maybe sniff packets too)
         const senderReadable = <string>sender.url; // this is a string because it begins with a string (above)
         log.d(`Forwarding a message from ${senderReadable} to Cerebro`);
         try {
