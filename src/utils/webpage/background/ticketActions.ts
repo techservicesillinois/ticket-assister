@@ -628,11 +628,7 @@ export async function getTicketDatumBg(ticketID: TicketID, fieldValue: string): 
 			.then(getDomFromText)
 			.then(dom => {
                 const value = getTicketDatumFg(dom, fieldValue); // also may throw, rej'ing
-                if (value !== undefined) {
-                    res(value);
-                } else {
-                    rej();
-                }
+                res(value);
 			},
 			() => rej(FetchErrorMessage.NETWORK_ERROR)
 		);
