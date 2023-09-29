@@ -1,4 +1,5 @@
 // <rule name="TDX/Ticket/Close on close">
+import { closeWindow } from "utils/closeWindow";
 import { log } from "utils/logger";
 import { CLOSE_TICKET_KEY, MAX_REFRESH_TIME_MS } from "utils/webpage/link/session";
 import { getCurrentTicketNumber } from "utils/webpage/parser/ticket";
@@ -23,10 +24,10 @@ if (lastClose === null) {
             log.d("Not closing ticket because the most recent record had a different id");
         } else if (Date.now() - closeData.time < MAX_REFRESH_TIME_MS) {
             // close window
-            log.i("Detected this ticket recently being closed from an update. Closing window");
-            window.close();
+            log.i("Detected this ticket recently being closed from an update. Requesting window closure");
+            closeWindow();
         } else {
-            log.d("Not closing ticket because the most recent record was too long ago");
+            log.d(`Not closing ticket because the most recent record was too long ago (${Date.now() - closeData.time}ms)`);
         }
     }
     // either consumed or invalid, so clear

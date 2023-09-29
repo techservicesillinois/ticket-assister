@@ -1,4 +1,5 @@
 // <rule name="TDX/Ticket/Close on close">
+import { closeWindow } from "utils/closeWindow";
 import { log } from "utils/logger";
 import { Status } from "utils/tdx/formNames";
 import { getCurrentStatus } from "utils/webpage/foreground/tdx/shared";
@@ -47,7 +48,7 @@ if (lastClose === null) {
                 && Date.now() - closeData.time < MAX_REFRESH_TIME_MS) {
             // close window
             log.i("Detected this ticket recently being closed from an update. Closing window");
-            window.close();
+            closeWindow();
         } else {
             log.d("Not closing ticket because the most recent record had a different id");
         }
