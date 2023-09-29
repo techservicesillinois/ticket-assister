@@ -6,24 +6,18 @@ URL:=https://www.googleapis.com/upload/chromewebstore/v1.1/items
 all: build test
 
 # https://developer.chrome.com/docs/webstore/using_webstore_api/
-publish: releases/latest.zip
+publish: clean releases/latest.zip
 	curl $(HEADERS) -X PUT -T $^ -v $(URL)/$(CHROME_ITEM_ID)
 
 release: releases/latest.zip
-release-dev: releases/latest-dev.zip
+release-dev: export BUILD_OPT="-dev"
+release-dev: releases/latest.zip
 
 releases/latest.zip: build
 	mkdir releases -p && cd $^ && zip -D -r ../$@ .
 
-releases/latest-dev.zip: build-dev
-	mkdir releases -p && cd $^ && zip -D -r ../$@ .
-
 build: node_modules
-	npm run build
-
-build-dev: node_modules
-	npm run build:dev
-	mv build build-dev
+	npm run build$(BUILD_OPT)
 
 deps: node_modules
 
