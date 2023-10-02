@@ -1,7 +1,7 @@
 name: CI/CD
 
 env:
-  IS_RELEASE: github.event_name == 'release'
+  IS_RELEASE: (github.event_name == 'release')
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set Dev Environment
-      if: ${{ vars.IS_RELEASE == false }}
+      if: ${{ env.IS_RELEASE == false }}
       # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable
       run: |
         echo "BUILD_OPT=-dev" >> "$GITHUB_ENV"
@@ -39,7 +39,7 @@ jobs:
         path: ./releases/latest.zip
         retention-days: 30
     - name: Create Release
-      if: ${{ vars.IS_RELEASE }}
+      if: ${{ env.IS_RELEASE }}
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -50,7 +50,7 @@ jobs:
         draft: false
         prerelease: false
     - name: Upload Release Asset
-      if: ${{ vars.IS_RELEASE }}
+      if: ${{ env.IS_RELEASE }}
       id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
@@ -61,7 +61,7 @@ jobs:
         asset_name: latest.zip
         asset_content_type: application/zip
     - name: Upload to Chrome Web Store
-      if: ${{ vars.IS_RELEASE }}
+      if: ${{ env.IS_RELEASE }}
       run: |
         make publish
       env:
