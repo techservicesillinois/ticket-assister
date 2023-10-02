@@ -1,7 +1,7 @@
 name: CI/CD
 
 env:
-  IS_RELEASE: github.event_name == 'release' && (github.event.action == 'created' || github.event.action == 'edited')
+  IS_RELEASE: github.event_name == 'release'
 
 on:
   push:
