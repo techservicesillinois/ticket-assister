@@ -18,38 +18,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Set Dev Environment
+      if: ${{ vars.IS_RELEASE == false }}
+      # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable
+      run: |
+        echo "BUILD_OPT=-dev" >> "$GITHUB_ENV"
     - name: Tests
       run: |
         make test
-    - name: Build Package (Prod)
-      if: ${{ vars.IS_RELEASE }}
+    - name: Build Package
       run: |
         make build
-    - name: Build Package (Dev)
-      if: ${{ vars.IS_RELEASE == false }}
-      run: |
-        make build-dev
-    - name: Zip Package (Prod)
-      if: ${{ vars.IS_RELEASE }}
+    - name: Zip Package
       run: |
         make release
-    - name: Zip Package (Dev)
-      if: ${{ vars.IS_RELEASE == false }}
-      run: |
-        make release-dev
-    - name: Store build as an artifact (Prod)
-      if: ${{ vars.IS_RELEASE }}
+    - name: Store build as an artifact
       uses: actions/upload-artifact@v3
       with:
         name: latest zip file
         path: ./releases/latest.zip
-        retention-days: 30
-    - name: Store build as an artifact (Dev)
-      if: ${{ vars.IS_RELEASE == false }}
-      uses: actions/upload-artifact@v3
-      with:
-        name: latest zip file
-        path: ./releases/latest-dev.zip
         retention-days: 30
     - name: Create Release
       if: ${{ vars.IS_RELEASE }}
