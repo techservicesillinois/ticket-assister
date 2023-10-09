@@ -24,10 +24,6 @@ jobs:
       run: |
         echo "BUILD_OPT=-dev" >> "$GITHUB_ENV"
         echo "env.IS_RELEASE: ${{ env.IS_RELEASE }}"
-        echo "env.FOO: ${{ env.FOO }}"
-        echo "vars.IS_RELEASE: ${{ vars.IS_RELEASE }}"
-        echo "vars.FOO: ${{ vars.FOO }}"
-        echo "github.event_name: ${{ github.event_name }}"
     - name: Tests
       run: |
         make test
@@ -68,7 +64,7 @@ jobs:
     - name: Upload to Chrome Web Store
       if: ${{ env.IS_RELEASE }}
       run: |
-        echo make publish 2
+        make publish
       env:
         CHROME_ITEM_ID: ${{ vars.CHROME_ITEM_ID }}
         CHROME_TOKEN: ${{ secrets.CHROME_TOKEN }}
