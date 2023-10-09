@@ -68,7 +68,7 @@ jobs:
     - name: Upload to Chrome Web Store
       if: ${{ env.IS_RELEASE }}
       run: |
-        echo make publish
+        echo make publish 2
       env:
         CHROME_ITEM_ID: ${{ vars.CHROME_ITEM_ID }}
         CHROME_TOKEN: ${{ secrets.CHROME_TOKEN }}
