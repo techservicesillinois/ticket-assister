@@ -1,7 +1,7 @@
 name: CI/CD
 
 env:
-  IS_RELEASE: (github.event_name == 'release')
+  IS_RELEASE: ${{ github.event_name == 'release' }}
 
 on:
   push:
