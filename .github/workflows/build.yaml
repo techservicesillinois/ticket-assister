@@ -2,7 +2,7 @@ name: CI/CD
 
 env:
   # Note: This is a string "true" or "false"
-  IS_RELEASE: ${{ github.event_name != 'release' }}
+  IS_RELEASE: ${{ github.event_name == 'release' }}
 
 on:
   push:
@@ -19,10 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Debug Info
-      run: |
-        echo "env.IS_RELEASE: ${{ env.IS_RELEASE }}"
-        echo "IS_RELEASE: $IS_RELEASE"
     - name: Set Dev Environment
       if: ${{ env.IS_RELEASE == 'false' }}
       # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable
@@ -68,7 +64,7 @@ jobs:
     - name: Upload to Chrome Web Store
       if: ${{ env.IS_RELEASE == 'true' }}
       run: |
-        echo make publish
+        make publish
       env:
         CHROME_ITEM_ID: ${{ vars.CHROME_ITEM_ID }}
         CHROME_TOKEN: ${{ secrets.CHROME_TOKEN }}
