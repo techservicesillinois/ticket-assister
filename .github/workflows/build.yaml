@@ -23,7 +23,7 @@ jobs:
         echo "env.IS_RELEASE: ${{ env.IS_RELEASE }}"
         echo "IS_RELEASE: $IS_RELEASE"
     - name: Set Dev Environment
-      if: ${{ env.IS_RELEASE == "false" }}
+      if: ${{ env.IS_RELEASE == 'false' }}
       # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable
       run: |
         echo "BUILD_OPT=-dev" >> "$GITHUB_ENV"
