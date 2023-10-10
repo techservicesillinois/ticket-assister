@@ -13,6 +13,11 @@
             font-style: italic;
             font-size: 0.75em;
         }
+		.heading {
+			font-size: 2em;
+			border-bottom: 1px solid #888;
+			margin-top: 1.5em;
+		}
 		.presets-wrapper {
 			display: flex;
 			flex-direction: row;
@@ -111,6 +116,52 @@
 		.branch > .section-title {
 			border-bottom: 2px double #cacaca;
 		}
+		
+		#additional-options-wrapper {
+			margin: 3em 1em;
+		}
+		#additional-options-wrapper > div > p {
+			font-size: 1.25em;
+			font-weight: 700;
+		}
+		textarea, .textarea-support {
+			margin: 0;
+			border-radius: 0;
+			resize: none; /* otherwise looks tacky */
+			height: 12rem;
+
+			box-sizing: border-box;
+			width: 95vw; /*100%*/
+			/* normalize */
+			border: 2px solid #000;
+			font-family: monospace;
+			font-size: 1rem;
+
+			overflow: auto;
+			white-space-collapse: preserve;
+			text-wrap: wrap;
+			overflow-wrap: break-word;
+		}
+		textarea:focus {
+			outline: none;
+		}
+		.textarea-support {
+			/*z-index: 1;*/
+			position: absolute;
+			background-color: transparent;
+			border-color: transparent;
+			pointer-events: none;
+		}
+		.textarea-support > div {
+			white-space: pre-wrap;
+			word-wrap: break-word;
+			color: transparent;
+		}
+		.textarea-support > div mark {
+			border-radius: 3px;
+			color: transparent;
+			background-color: #005d8b50;
+		}
     </style>
     <!--<script type="application/javascript" src="browser-polyfill.js"></script>-->
 </head>
@@ -131,6 +182,10 @@
 	<p id="think-tank"></p>
 	
 	<div id="options-wrapper">
+		<!-- populated in script -->
+	</div>
+	<div id="additional-options-wrapper">
+		<p>Additional Options</p>
 		<!-- populated in script -->
 	</div>
 

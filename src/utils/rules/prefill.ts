@@ -22,3 +22,21 @@ export async function getCustomPrefillOrDefault(): Promise<string> {
     // errored or not set: give the default
     return DEFAULT_PREFILL;
 }
+
+/**
+ * A list of the allowed brace variables
+ *
+ * Does not include the surrounding braces themselves.
+ *
+ * @remarks
+ * Should be even with the list in {@link replacePrefillVariables}.
+ *
+ * Includes all variables that are parsed and replaced,
+ * even if they aren't fully working yet (e.g., {cursor}).
+ */
+export const PERMITTED_BRACE_VARIABLES = [
+	"client.name.first", "client.name.last", "client.name.full",
+	"self.name.first", "self.name.last", "self.name.full",
+	"ticket.number",
+	"cursor"
+];
