@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getSubstringBetween, conformsToHTMLTags, DEFAULT_ALLOWED_TAGS, stringBeginsWith, changeExtension, squishArray } from "./stringParser";
+import { getSubstringBetween, conformsToHTMLTags, DEFAULT_ALLOWED_TAGS, stringBeginsWith, changeExtension, squishArray, stringToBoolean } from "./stringParser";
 
 describe("getSubstringBetween", () => {
     it("should return 'cool' when given 'this is {something{cool}}, right?', 'thing{', '}'", () => {
@@ -141,5 +141,20 @@ describe("squishArray", () => {
         expect(squishArray(["a", "b, c"])).toBe("a, b, c");
         expect(squishArray(["a", "b", "c"])).toBe("a, b, c");
         expect(squishArray(["a", "b", "c", "f", "f", "f"])).toBe("a, b, c, f, f, f");
+    });
+});
+
+describe("stringToBoolean", () => {
+    it("converts true and false", () => {
+        expect(stringToBoolean("true")).toBe(true);
+        expect(stringToBoolean("false")).toBe(false);
+    });
+    it("converts everything else to null", () => {
+        expect(stringToBoolean("cow")).toBeNull();
+        expect(stringToBoolean("t")).toBeNull();
+        expect(stringToBoolean("f")).toBeNull();
+        expect(stringToBoolean("")).toBeNull();
+        expect(stringToBoolean(" ")).toBeNull();
+        expect(stringToBoolean("moo")).toBeNull();
     });
 });
