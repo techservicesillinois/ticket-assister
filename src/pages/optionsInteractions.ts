@@ -5,7 +5,7 @@ import { log } from "utils/logger";
 import rules from "../rules/rules";
 import { squishArray, escapeRegExp, escapeHtml } from "utils/stringParser";
 import { downloadLogFileButton } from "./downloadLogFile";
-import { getCustomPrefillOrDefault, PERMITTED_BRACE_VARIABLES } from "utils/rules/prefill";
+import { DEFAULT_PREFILL, getCustomPrefillOrDefault, PERMITTED_BRACE_VARIABLES } from "utils/rules/prefill";
 
 
 // Presets
@@ -344,9 +344,9 @@ function generateCustomPrefillInput() {
 	/**
 	 * Highlights {@link textareaHighlightsChild}
 	 * according to {@link input}'s current value,
-	 * highlighting any string matches in the array PERMITTED_BRACE_VARIABLES
+	 * highlighting any string matches in the array wordsToHighlight
 	 */
-	function applyHighlights(PERMITTED_BRACE_VARIABLES: string[]) {
+	function applyHighlights(wordsToHighlight: string[]) {
 		// need to escape HTML because we are going to inject this into innerHTML
 		// after some modifications
 		const text = escapeHtml(input.value);
@@ -354,7 +354,7 @@ function generateCustomPrefillInput() {
 			//.replace(/\n$/g, "\n\n") // end of line shift
 			;
 		// go through ecah of the strings that we want to highlight
-		for (const highlightString of PERMITTED_BRACE_VARIABLES) {
+		for (const highlightString of wordsToHighlight) {
 			// indicate that it should be highlighted in textareaHighlightsChild
 			// so that the CSS can do its work
 			highlighedText = highlighedText.replace(new RegExp(escapeRegExp(highlightString), "g"), "<mark>$&</mark>");
@@ -394,7 +394,7 @@ function generateCustomPrefillInput() {
 	insertCurrentPrefillRaw(input)
 		.then(() => {
 			log.d(`Current prefill data inserted.`);
-			applyHighlights(PERMITTED_BRACE_VARIABLES);
+			applyHighlights(PERMITTED_BRACE_VARIABLES.map(str => `{${str}}`));
 			// add listeners for updates
 			// note that these listeners are set *after* the initial population
 			// so no extra calls will be hit
@@ -403,7 +403,7 @@ function generateCustomPrefillInput() {
 				visuallySetSaveStale();
 				// update highlights to show what has been detected as a brace variable
 				// Cannot directly highlight textarea (https://codersblock.com/blog/highlight-text-inside-a-textarea/)
-				applyHighlights(PERMITTED_BRACE_VARIABLES);
+				applyHighlights(PERMITTED_BRACE_VARIABLES.map(str => `{${str}}`));
 				// save after 500ms delay to account for slow typers
 				// explicitly say "window" to avoid TypeScript getting confused (https://stackoverflow.com/a/56239226/8804293)
 				window.clearTimeout(timeout);
@@ -455,7 +455,9 @@ function generateCustomPrefillInput() {
 	 */
 	async function resetInput() {
 		//await setCurrentPrefill(DEFAULT_PREFILL);
-		input.value = DEFAULT_PREFILL;
+		insertPrefillRaw(DEFAULT_PREFILL, input);
+		// force reflow
+		applyHighlights(PERMITTED_BRACE_VARIABLES.map(str => `{${str}}`));
 		visuallySetSaveStale();
 		saveInput();
 	}
@@ -473,9 +475,16 @@ function generateCustomPrefillInput() {
 async function insertCurrentPrefillRaw(inputEl: HTMLTextAreaElement) {
 	const prefillHTML = await getCustomPrefillOrDefault();
 	// replace linebreaks (<br /> -> \n)
-	inputEl.value = prefillHTML.replace(/<br\s*\/?>/g, "\n");
+	insertPrefillRaw(prefillHTML, inputEl);
 	// ok now to modify
 	inputEl.disabled = false;
+}
+/**
+ * Inserts {@param data} into {@param inputEl}
+ * after converting `<br />`s into displayable `\n`s
+ */
+function insertPrefillRaw(data: string, inputEl: HTMLTextAreaElement) {
+	inputEl.value = data.replace(/<br\s*\/?>/g, "\n");
 }
 
 document.addEventListener("DOMContentLoaded", loadAllSavedOptions);
