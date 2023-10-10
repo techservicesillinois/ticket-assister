@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getSubstringBetween, conformsToHTMLTags, DEFAULT_ALLOWED_TAGS, stringBeginsWith, changeExtension, squishArray } from "./stringParser";
+import { getSubstringBetween, conformsToHTMLTags, DEFAULT_ALLOWED_TAGS, stringBeginsWith, changeExtension, squishArray, escapeRegExp, escapeHtml } from "./stringParser";
 
 describe("getSubstringBetween", () => {
     it("should return 'cool' when given 'this is {something{cool}}, right?', 'thing{', '}'", () => {
@@ -143,3 +143,49 @@ describe("squishArray", () => {
         expect(squishArray(["a", "b", "c", "f", "f", "f"])).toBe("a, b, c, f, f, f");
     });
 });
+
+describe("escapeRegExp", () => {
+    it("doesn't modify strings with no special characters", () => {
+        expect(escapeRegExp("plaintext")).toBe("plaintext");
+        expect(escapeRegExp("string with some spaces")).toBe("string with some spaces");
+    });
+    it("does modify strings with special characters", () => {
+        expect(escapeRegExp("special characters?")).not.toBe("special characters?");
+        expect(escapeRegExp("[capture]")).not.toBe("[capture]?");
+        expect(escapeRegExp("\\")).not.toBe("\\");
+    });
+    it("matches the input string when passed to a regex match", () => {
+		// helper
+		function testMatch(match: string, against: string) {
+			/*// if not null, was >0 matches
+			expect(against.match(new RegExp(escapeRegExp(match)))).not.toBeNull();*/
+			expect(against).toMatch(new RegExp(escapeRegExp(match)));
+		}
+		testMatch("normal", "normal string");
+		testMatch("self", "self");
+		testMatch("ers?", "characters? which should be escaped?");
+		testMatch("...", "multiple escapes...");
+		testMatch("[mat][ch][es]", "[mat][ch][es][anti][dis][establish][ment][arian][ism]");
+		testMatch("\\", "a backslash (\\)");
+		testMatch("an$0y.n}", "very an$0y.n} inputs");
+    });
+});
+
+/*
+// cannot test as escapeHtml relies on {@link document},
+// which is only available in the front-end
+describe("escapeHtml", () => {
+    it("doesn't modify strings with no special characters", () => {
+        expect(escapeHtml("plaintext")).toBe("plaintext");
+        expect(escapeHtml("boring text.")).toBe("boring text.");
+    });
+    it("does modify strings with carots", () => {
+        expect(escapeHtml("<p>")).not.toBe("<p>");
+        expect(escapeHtml("<p>text text</p>")).not.toBe("<p>text text</p>");
+        expect(escapeHtml("<script>alert(\"you lose\");</script>")).not.toContain("<script>");
+    });
+    it("properly escapes HTML tags", () => {
+        expect(escapeHtml("<p>text text</p>")).toBe("&lt;p&gt;text text&lt;/p&gt;");
+    });
+});
+*/

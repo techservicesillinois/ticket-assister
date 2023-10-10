@@ -62,3 +62,28 @@ export function squishArray(arr: Array<string>): string {
 	const formatter = new Intl.ListFormat("en", { style: "narrow", type: "conjunction" });
 	return formatter.format(arr);
 }
+
+/**
+ * Escapes a string so that it can be used as a literal match
+ * in a {@link RegExp}
+ todo so link
+ *
+ * @see https://stackoverflow.com/a/6969486
+ */
+export function escapeRegExp(str: string): string {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Escapes HTML.
+ * 
+ * Only works when ran on the frontend.
+ *
+ * @remarks
+ * In the native manner that the browser does.
+ */
+export function escapeHtml(html: string): string {
+	const p = document.createElement("p");
+	p.textContent = html;
+	return p.innerHTML; // escaped
+}
