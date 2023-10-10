@@ -66,9 +66,8 @@ export function squishArray(arr: Array<string>): string {
 /**
  * Escapes a string so that it can be used as a literal match
  * in a {@link RegExp}
- todo so link
  *
- * @see https://stackoverflow.com/a/6969486
+ * @see https://stackoverflow.com/a/6969486/8804293
  */
 export function escapeRegExp(str: string): string {
 	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
