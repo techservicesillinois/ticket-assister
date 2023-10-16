@@ -1,13 +1,14 @@
 .PHONY: all deps test clean clean-all release publish release-dev
 
-HEADERS:=-H "Authorization: Bearer $(CHROME_TOKEN)" -H "x-goog-api-version: 2"
-URL:=https://www.googleapis.com/upload/chromewebstore/v1.1/items
+#HEADERS:=-H "Authorization: Bearer $(CHROME_TOKEN)" -H "x-goog-api-version: 2"
+#URL:=https://www.googleapis.com/upload/chromewebstore/v1.1/items
 
 all: build test
 
 # https://developer.chrome.com/docs/webstore/using_webstore_api/
+#curl $(HEADERS) -X PUT -T releases/latest.zip -v $(URL)/$(CHROME_ITEM_ID)
 publish: clean releases/latest.zip
-	curl $(HEADERS) -X PUT -T releases/latest.zip -v $(URL)/$(CHROME_ITEM_ID)
+	python publish.py releases/latest.zip
 
 release: releases/latest.zip
 release-dev: export BUILD_OPT="-dev"
