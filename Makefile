@@ -7,7 +7,7 @@ all: build test
 
 # https://developer.chrome.com/docs/webstore/using_webstore_api/
 publish: clean releases/latest.zip
-	curl $(HEADERS) -X PUT -T $^ -v $(URL)/$(CHROME_ITEM_ID)
+	curl $(HEADERS) -X PUT -T releases/latest.zip -v $(URL)/$(CHROME_ITEM_ID)
 
 release: releases/latest.zip
 release-dev: export BUILD_OPT="-dev"
