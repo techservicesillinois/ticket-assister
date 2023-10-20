@@ -304,7 +304,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.EDIT,
-				script: "tdx/ticket/edit/ctrl+enter-to-submit-comment.ts",
+				script: "tdx/ticket/edit/ctrl+enter-to-submit.ts",
 			},
 		],
 	},
@@ -419,7 +419,7 @@ const exportDefault: Array<ToggleableFeature> = [
 			{
 				url: TICKET_URL.EDIT,
 				script: "tdx/ticket/edit/close-on-close.ts",
-      },
+      		},
 		],
 	},
 ];
