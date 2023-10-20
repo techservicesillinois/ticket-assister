@@ -134,21 +134,3 @@ export async function setCurrentPreset(presetName: string): Promise<void> {
 	await storageArea.set({ currentPreset: presetName });
 	return;
 }
-
-
-/**
- * Converts a string to a boolean,
- * returning null if not possible
- *
- * @remarks
- * Only will parse "true" or "false"
- */
-function stringToBoolean(str: string): boolean | null {
-	if (str === "true") {
-		return true;
-	} else if (str === "false") {
-		return false;
-	} else {
-		return null;
-	}
-}
