@@ -20,7 +20,7 @@ result = requests.post('https://accounts.google.com/o/oauth2/token',
     )
 
 if result.status_code != requests.codes.ok:
-    print(f'Error: {result.text}')
+    print(f'Error {result.status_code}: {result.text}')
     sys.exit(1)
 
 import pdb; pdb.set_trace()
@@ -32,12 +32,21 @@ access_token = result_json['access_token']
 # according to the following CURL:
 '''
 curl \
-    -H "Authorization: Bearer $TOKEN"  \
+    -H "Authorization: Bearer $CHROME_ACCESS_TOKEN"  \
     -H "x-goog-api-version: 2" \
     -X PUT \
-    -T $FILE_NAME \
+    -T "./releases/20230805_tkast_1.0.0.zip" \
     -v \
-    https://www.googleapis.com/upload/chromewebstore/v1.1/items/$ITEM_ID
+    https://www.googleapis.com/upload/chromewebstore/v1.1/items/$CHROME_ITEM_ID
+'''
+'''
+curl \
+    -H "X-goog-api-key: $CHROME_API_KEY" \
+    -H "x-goog-api-version: 2" \
+    -X PUT \
+    -T "./releases/20230805_tkast_1.0.0.zip" \
+    -v \
+    https://www.googleapis.com/upload/chromewebstore/v1.1/items/$CHROME_ITEM_ID
 '''
 
 '''
