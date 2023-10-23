@@ -419,7 +419,7 @@ const exportDefault: Array<ToggleableFeature> = [
 			{
 				url: TICKET_URL.EDIT,
 				script: "tdx/ticket/edit/close-on-close.ts",
-      		},
+			},
 		],
 	},
 ];
