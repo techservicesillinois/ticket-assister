@@ -64,10 +64,3 @@ jobs:
         asset_path: ./releases/latest.zip
         asset_name: latest.zip
         asset_content_type: application/zip
-    - name: Upload to Chrome Web Store
-      if: ${{ env.IS_RELEASE == 'true' }}
-      run: |
-        make publish
-      env:
-        CHROME_ITEM_ID: ${{ vars.CHROME_ITEM_ID }}
-        CHROME_TOKEN: ${{ secrets.CHROME_TOKEN }}

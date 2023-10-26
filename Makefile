@@ -6,6 +6,7 @@ URL:=https://www.googleapis.com/upload/chromewebstore/v1.1/items
 all: build test
 
 # https://developer.chrome.com/docs/webstore/using_webstore_api/
+# This requires a valid CHROME_TOKEN which expires in 5 minutes.
 publish: clean releases/latest.zip
 	curl $(HEADERS) -X PUT -T releases/latest.zip -v $(URL)/$(CHROME_ITEM_ID)
 
