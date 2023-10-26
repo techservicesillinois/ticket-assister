@@ -1,8 +1,8 @@
-import { describe, it, expect, test } from "vitest";
+import { describe, test, expect } from "vitest";
 import { prefixRecordWith, setsAreEqual } from "./object";
 
 describe("prefixRecordWith", () => {
-    it("should return the passed record with prefixed keys", () => {
+    describe("should return the passed record with prefixed keys", () => {
 		test("Record with values of type boolean", () => {
 			const input: Record<string, boolean> = {
 				"1": true,
@@ -16,7 +16,7 @@ describe("prefixRecordWith", () => {
 				"test3": false,
 				"testfour": false,
 			};
-			expect(prefixRecordWith(input, "test")).toBe(expected);
+			expect(prefixRecordWith(input, "test")).toStrictEqual(expected);
 		});
 		test("Record with values of type number", () => {
 			const input: Record<string, number> = {
@@ -31,7 +31,7 @@ describe("prefixRecordWith", () => {
 				"test~+3": -2,
 				"test~/four": 23,
 			};
-			expect(prefixRecordWith(input, "test~")).toBe(expected);
+			expect(prefixRecordWith(input, "test~")).toStrictEqual(expected);
 		});
 		test("Record with values of type string", () => {
 			const input: Record<string, string> = {
@@ -41,21 +41,21 @@ describe("prefixRecordWith", () => {
 				"four": "four",
 			};
 			const expected: Record<string, string> = {
-				"test1": "",
-				"testtwo": ".",
-				"test3": "..",
-				"testfour": "........",
+				"test1": "true",
+				"testtwo": "2",
+				"test3": "shopping spree",
+				"testfour": "four",
 			};
-			expect(prefixRecordWith(input, "test")).toBe(expected);
+			expect(prefixRecordWith(input, "test")).toStrictEqual(expected);
 		});
     });
 });
 
 describe("setsAreEqual", () => {
-    it("should return true for two empty sets", () => {
+    test("should return true for two empty sets", () => {
 		expect(setsAreEqual(new Set(), new Set())).toBe(true);
 	});
-	it("should return true for two equal sets", () => {
+	describe("should return true for two equal sets", () => {
 		const setA1 = new Set(["a"]);
 		const setA2 = new Set(["a"]);
 		expect(setsAreEqual(setA1, setA2)).toBe(true);
@@ -64,7 +64,7 @@ describe("setsAreEqual", () => {
 		const setB2 = new Set(["a", "b", "c"]);
 		expect(setsAreEqual(setB1, setB2)).toBe(true);
 
-		it("even if the sets had values added in a different order", () => {
+		test("even if the sets had values added in a different order", () => {
 			const setC1 = new Set(["a", "b", "c"]);
 			const setC2 = new Set(["c", "b", "a"]);
 			expect(setsAreEqual(setC1, setC2)).toBe(true);
@@ -73,13 +73,13 @@ describe("setsAreEqual", () => {
 			const setD2 = new Set(["a", "c", "b"]);
 			expect(setsAreEqual(setD1, setD2), "these are equivalent (order does not matter)").toBe(true);
 		});
-		it("even if the sets had multiple of the same values added to it", () => {
+		test("even if the sets had multiple of the same values added to it", () => {
 			const setE1 = new Set(["a"]);
 			const setE2 = new Set(["a", "a", "a"]);
 			expect(setsAreEqual(setE1, setE2), "these are equivalent (no duplicates)").toBe(true);
 		});
 	});
-	it("should return false for two sets of different szes", () => {
+	test("should return false for two sets of different szes", () => {
 		const setA1 = new Set(["a"]);
 		const setA2 = new Set(["a", "b"]);
 		expect(setsAreEqual(setA1, setA2)).toBe(false);
@@ -93,7 +93,7 @@ describe("setsAreEqual", () => {
 		expect(setsAreEqual(setC1, setC2)).toBe(false);
 
 	});
-	it("should return false for two sets of the same size with different values", () => {
+	test("should return false for two sets of the same size with different values", () => {
 		const setA1 = new Set(["a"]);
 		const setA2 = new Set(["b"]);
 		expect(setsAreEqual(setA1, setA2)).toBe(false);

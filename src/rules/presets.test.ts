@@ -1,11 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, test, expect } from "vitest";
 import presets, { CUSTOM_PRESET } from "./presets";
 import rules from "./rules";
 import { setsAreEqual } from "utils/object";
 
 
 describe("Defined presets list", () => {
-    it("has every rule (as defined in rules.ts) set (to either true or false)", () => {
+    test("has every rule (as defined in rules.ts) set (to either true or false)", () => {
         Object.entries(presets).forEach(([presetName, optionSettings]) => {
             if (presetName === CUSTOM_PRESET) return; // allowed
             

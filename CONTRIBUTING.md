@@ -105,11 +105,9 @@ They are referred to as "rules" internally.
 
 	Implement scripts, if applicable:
 
-	- In `src/contentScripts/[rulePath]/cs[N].ts`
+	- In `src/contentScripts/[rulePath]/[ruleName].ts`
 		- `[rulePath]` is typically the rule name without the final slash and following string
-		- `[N]` is the integer of the next content script
-			- E.g., if the latest content script is named `cs30.ts`, the new one should be named `cs31.ts`
-			- This is regardless of the directory that the file is stored in
+		- `[ruleName]` is the final part of the rule name after the final slash, hypen (`-`) separated
 	- `import`s should be relative to `src`
 	- Multiple scripts may be related to a single rule; remember to keep them to a unified purpose
 

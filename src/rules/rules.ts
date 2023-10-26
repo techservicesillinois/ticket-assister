@@ -26,7 +26,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: CEREBRO_URL,
-				script: "cerebro/cs1.ts",
+				script: "cerebro/flagger-alert-red.ts",
 			},
 		],
 	},
@@ -36,7 +36,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: CEREBRO_URL,
-				script: "cerebro/cs2.ts",
+				script: "cerebro/flagger-highlight-red.ts",
 			},
 		],
 	},
@@ -46,7 +46,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: CEREBRO_URL,
-				script: "cerebro/cs3.ts",
+				script: "cerebro/flagger-highlight-yellow.ts",
 			},
 		],
 	},
@@ -56,7 +56,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: CEREBRO_URL,
-				script: "cerebro/cs4.ts",
+				script: "cerebro/flagger-show-count.ts",
 			},
 		],
 	},
@@ -66,7 +66,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: CEREBRO_URL,
-				script: "cerebro/cs5.ts",
+				script: "cerebro/show-logo.ts",
 			},
 		],
 	},
@@ -77,7 +77,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: `${TICKETS_BASE_URL}/*`,
-				script: "tdx/ticket/cs6.ts",
+				script: "tdx/ticket/show-logo.ts",
 			},
 		],
 	},
@@ -88,7 +88,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW_CREATED,
-				script: "tdx/ticket/create/cs7.ts",
+				script: "tdx/ticket/create/auto-open-ticket.ts",
 			},
 		],
 	},
@@ -98,11 +98,11 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW_CREATED,
-				script: "tdx/ticket/create/cs8.ts",
+				script: "tdx/ticket/create/auto-take-ticket.ts",
 			},
 			{ // in case loaded too fast
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs38.ts",
+				script: "tdx/ticket/view/auto-take-ticket.ts",
 			},
 		],
 	},
@@ -112,7 +112,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
-				script: "tdx/ticket/create/cs9.ts",
+				script: "tdx/ticket/create/ctrl+enter-to-submit.ts",
 			},
 		],
 	},
@@ -122,7 +122,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
-				script: "tdx/ticket/create/cs10.ts",
+				script: "tdx/ticket/create/auto-select-service-request-form.ts",
 			},
 		],
 	},
@@ -132,7 +132,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
-				script: "tdx/ticket/create/cs11.ts",
+				script: "tdx/ticket/create/quick-select-service-request-incident-classtech-form.ts",
 			},
 		],
 	},
@@ -142,7 +142,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
-				script: "tdx/ticket/create/cs34.ts",
+				script: "tdx/ticket/create/auto-select-phone-as-source.ts",
 			},
 		],
 	},
@@ -152,7 +152,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
-				script: "tdx/ticket/create/cs35.ts",
+				script: "tdx/ticket/create/hide-additional-contacts.ts",
 			},
 		],
 	},
@@ -162,7 +162,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
-				script: "tdx/ticket/create/cs36.ts",
+				script: "tdx/ticket/create/dont-notify-requestor.ts",
 			},
 		],
 	},
@@ -173,7 +173,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs13.ts",
+				script: "tdx/ticket/view/ctrl+enter-to-submit.ts",
 			},
 		],
 	},
@@ -183,7 +183,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs14.ts",
+				script: "tdx/ticket/view/make-comments-private-by-default.ts",
 			},
 		],
 	},
@@ -193,7 +193,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs15.ts",
+				script: "tdx/ticket/view/dont-warn-if-private-comment-is-not-notifying.ts",
 			},
 		],
 	},
@@ -203,7 +203,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs16.ts",
+				script: "tdx/ticket/view/hotkeys.ts",
 			},
 		],
 	},
@@ -213,7 +213,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs17.ts",
+				script: "tdx/ticket/view/additional-hotkeys.ts",
 			},
 		],
 	},
@@ -223,7 +223,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs19.ts",
+				script: "tdx/ticket/view/gray-out-unused-actions.ts",
 			},
 		],
 	},
@@ -233,7 +233,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs20.ts",
+				script: "tdx/ticket/view/hide-extra-details.ts",
 			},
 		],
 	},
@@ -243,7 +243,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs21.ts",
+				script: "tdx/ticket/view/button-to-copy-netid.ts",
 			},
 		],
 	},
@@ -253,7 +253,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs22.ts",
+				script: "tdx/ticket/view/buttons-to-open-tools-with-clients-account.ts",
 			},
 		],
 	},
@@ -263,7 +263,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs23.ts",
+				script: "tdx/ticket/view/show-clients-recent-tickets.ts",
 			},
 		],
 	},
@@ -273,7 +273,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs37.ts",
+				script: "tdx/ticket/view/hide-attachments-if-empty.ts",
 			},
 		],
 	},
@@ -283,7 +283,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs42.ts",
+				script: "tdx/ticket/view/highlight-misconfigured-requestor-field.ts",
 			},
 		],
 	},
@@ -294,28 +294,28 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.EDIT,
-				script: "tdx/ticket/edit/cs24.ts",
+				script: "tdx/ticket/edit/go-back-on-save.ts",
 			},
 		],
 	},
 	{
-		name: "TDX/Ticket/Edit/Ctrl+Enter to submit comment",
+		name: "TDX/Ticket/Edit/Ctrl+Enter to submit",
 		description: "Allows you to press Ctrl+Enter to quickly submit edits.",
 		contentScripts: [
 			{
 				url: TICKET_URL.EDIT,
-				script: "tdx/ticket/edit/cs26.ts",
+				script: "tdx/ticket/edit/ctrl+enter-to-submit.ts",
 			},
 		],
 	},
 
 	{
-		name: "TDX/Ticket/Update/Ctrl+Enter to submit comment",
+		name: "TDX/Ticket/Update/Ctrl+Enter to submit",
 		description: "Allows you to press Ctrl+Enter to quickly submit an update email.",
 		contentScripts: [
 			{
 				url: TICKET_URL.UPDATE,
-				script: "tdx/ticket/update/cs28.ts",
+				script: "tdx/ticket/update/ctrl+enter-to-submit.ts",
 			},
 		],
 	},
@@ -325,7 +325,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.UPDATE,
-				script: "tdx/ticket/update/cs29.ts",
+				script: "tdx/ticket/update/auto-set-awaiting-customer-response.ts",
 			},
 		],
 	},
@@ -335,7 +335,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.UPDATE,
-				script: "tdx/ticket/update/cs30.ts",
+				script: "tdx/ticket/update/prefill-response.ts",
 			},
 		],
 	},
@@ -345,11 +345,11 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs31.ts",
+				script: "tdx/ticket/view/get-cerebro-data.ts",
 			},
 			{
 				url: CEREBRO_URL,
-				script: "cerebro/cs32.ts",
+				script: "cerebro/get-cerebro-data.ts",
 			},
 		],
 	},
@@ -359,7 +359,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: `${TICKETS_BASE_URL}/TicketSearch*`,
-				script: "tdx/ticket/cs33.ts",
+				script: "tdx/ticket/search-auto-select-all-statuses.ts",
 			},
 		],
 	},
@@ -380,7 +380,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.ASSIGN,
-				script: "tdx/ticket/assign/cs40.ts",
+				script: "tdx/ticket/assign/ctrl+enter-to-submit.ts",
 			},
 		],
 	},
@@ -390,7 +390,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.ASSIGN,
-				script: "tdx/ticket/assign/cs41.ts",
+				script: "tdx/ticket/assign/auto-focus.ts",
 			},
 		],
 	},
@@ -400,7 +400,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.ASSIGN,
-				script: "tdx/ticket/assign/cs43.ts",
+				script: "tdx/ticket/assign/warn-if-no-sra.ts",
 			},
 		],
 	},
@@ -410,16 +410,16 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/cs44.ts",
+				script: "tdx/ticket/view/close-on-close.ts",
 			},
 			{
 				url: TICKET_URL.UPDATE,
-				script: "tdx/ticket/update/cs45.ts",
+				script: "tdx/ticket/update/close-on-close.ts",
 			},
 			{
 				url: TICKET_URL.EDIT,
-				script: "tdx/ticket/edit/cs46.ts",
-      },
+				script: "tdx/ticket/edit/close-on-close.ts",
+			},
 		],
 	},
 ];
