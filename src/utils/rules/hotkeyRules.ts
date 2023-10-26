@@ -80,11 +80,11 @@ export const hotkeyRules: Record<string, () => void> = {
 		// Assign (reassign/escalate)
 		const reassignButton = document.querySelector("#divReassignTicket");
 		if (reassignButton === null || !(reassignButton instanceof HTMLElement)) {
-			log.e("Failed to scroll to top of feed section");
-			return;
-		} else {
+			log.e("Failed to locate reassign button");
 			// fallback
 			window.open(`${TICKETS_BASE_URL}/TicketReassign?TicketID=${getCurrentTicketNumber()}`, "TicketAssign564440", "popup=1,width=992,height=700,left=459,top=160");
+		} else {
+			reassignButton.click();
 		}
 	},
 };
