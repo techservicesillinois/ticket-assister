@@ -6,7 +6,7 @@ export const test = base.extend<{
   extensionId: string;
 }>({
   context: async ({ }, use) => {
-    const pathToExtension = 'C:\\Users\\elijah\\Downloads\\latest'; // todo
+    const pathToExtension = path.join(__dirname, "..", "build");
     const context = await chromium.launchPersistentContext('', {
       headless: false,
       args: [

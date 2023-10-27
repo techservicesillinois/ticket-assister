@@ -26,6 +26,6 @@ import { test, expect } from './fixtures';
 });*/
 
 test('popup page', async ({ page, extensionId }) => {
-  await page.goto(`chrome-extension://${extensionId}/popup.html`);
+  await page.goto(`chrome-extension://${extensionId}/pages/index.html`);
   await expect(page.locator('body')).toHaveText('Options');
 });
