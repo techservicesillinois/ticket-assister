@@ -9,6 +9,7 @@
     "dev": "rm -rf tmp/contentScripts && cp -r build/scripts/contentScripts/. tmp/contentScripts && NODE_ENV=development vite build -m development && cp -r tmp/contentScripts build/scripts/contentScripts",
     "clean": "rm -rf ./build && rm -rf tmp/contentScripts",
     "test": "vitest",
+    "test-integration": "playwright test",
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {
