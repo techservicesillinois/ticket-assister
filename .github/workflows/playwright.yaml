@@ -1,5 +1,9 @@
 name: Playwright Tests
 
+env:
+  # Note: This is a string "true" or "false"
+  IS_RELEASE: ${{ startsWith(github.ref, 'refs/tags/') }}
+
 on:
   push:
     branches: [ main ]
@@ -18,7 +22,14 @@ jobs:
     - name: Install dependencies
       run: npm ci
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+      run: npx playwright install --with-deps chromium
+    - name: Set Dev Environment
+      if: ${{ env.IS_RELEASE == 'false' }}
+      run: |
+        echo "BUILD_OPT=-dev" >> "$GITHUB_ENV"
+    - name: Build Package
+      run: |
+        make build
     - name: Run Playwright tests
       run: npx playwright test
     - uses: actions/upload-artifact@v3
