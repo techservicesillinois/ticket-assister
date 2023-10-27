@@ -112,7 +112,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.NEW,
-				script: "tdx/ticket/create/ctrl+enter-to-submit.ts",
+				script: "tdx/ticket/create/ctrl-enter-to-submit.ts",
 			},
 		],
 	},
@@ -173,7 +173,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.VIEW,
-				script: "tdx/ticket/view/ctrl+enter-to-submit.ts",
+				script: "tdx/ticket/view/ctrl-enter-to-submit.ts",
 			},
 		],
 	},
@@ -304,7 +304,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.EDIT,
-				script: "tdx/ticket/edit/ctrl+enter-to-submit.ts",
+				script: "tdx/ticket/edit/ctrl-enter-to-submit.ts",
 			},
 		],
 	},
@@ -315,7 +315,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.UPDATE,
-				script: "tdx/ticket/update/ctrl+enter-to-submit.ts",
+				script: "tdx/ticket/update/ctrl-enter-to-submit.ts",
 			},
 		],
 	},
@@ -380,7 +380,7 @@ const exportDefault: Array<ToggleableFeature> = [
 		contentScripts: [
 			{
 				url: TICKET_URL.ASSIGN,
-				script: "tdx/ticket/assign/ctrl+enter-to-submit.ts",
+				script: "tdx/ticket/assign/ctrl-enter-to-submit.ts",
 			},
 		],
 	},
