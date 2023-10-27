@@ -8,8 +8,11 @@ export const test = base.extend<{
   context: async ({ }, use) => {
     const pathToExtension = path.join(__dirname, "..", "build");
     const context = await chromium.launchPersistentContext('', {
+      // we will make this headless in args below
+      // see https://playwright.dev/docs/next/chrome-extensions
       headless: false,
       args: [
+        `--headless=new`,
         `--disable-extensions-except=${pathToExtension}`,
         `--load-extension=${pathToExtension}`,
       ],
