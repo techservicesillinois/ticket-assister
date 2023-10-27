@@ -26,7 +26,6 @@ export const test = base.extend<{
     */
 
     // for manifest v3:
-    console.log("SWs are:", context.serviceWorkers());
     let [background] = context.serviceWorkers();
     if (!background)
       background = await context.waitForEvent('serviceworker');
