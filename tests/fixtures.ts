@@ -1,5 +1,5 @@
-import { test as base, chromium, type BrowserContext } from '@playwright/test';
-import path from 'path';
+import { test as base, chromium, type BrowserContext } from "@playwright/test";
+import path from "path";
 
 export const test = base.extend<{
   context: BrowserContext;
@@ -7,7 +7,7 @@ export const test = base.extend<{
 }>({
   context: async ({ }, use) => {
     const pathToExtension = path.join(__dirname, "..", "build");
-    const context = await chromium.launchPersistentContext('', {
+    const context = await chromium.launchPersistentContext("", {
       // we will make this headless in args below
       // see https://playwright.dev/docs/next/chrome-extensions
       headless: false,
@@ -25,15 +25,15 @@ export const test = base.extend<{
     // for manifest v2:
     let [background] = context.backgroundPages()
     if (!background)
-      background = await context.waitForEvent('backgroundpage')
+      background = await context.waitForEvent("backgroundpage")
     */
 
     // for manifest v3:
     let [background] = context.serviceWorkers();
     if (!background)
-      background = await context.waitForEvent('serviceworker');
+      background = await context.waitForEvent("serviceworker");
 
-    const extensionId = background.url().split('/')[2];
+    const extensionId = background.url().split("/")[2];
     await use(extensionId);
   },
 });

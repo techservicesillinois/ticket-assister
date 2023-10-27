@@ -28,7 +28,9 @@ build-dev/
 releases/
 
 # Playwright testing output
-test-results/
+/test-results/
+/playwright-report/
+/playwright/.cache/
 
 # temporary files
 tmp/
@@ -42,6 +44,3 @@ tmp/
 
 # venv
 .secrets.baseline
-/test-results/
-/playwright-report/
-/playwright/.cache/
