@@ -20,12 +20,17 @@ node_modules/
 .env.production.local
 .env.local
 
-# build / generate output
+# build / generated output
 build/
 build-dev/
 
 # releases (production builds)
 releases/
+
+# Playwright testing output
+/test-results/
+/playwright-report/
+/playwright/.cache/
 
 # temporary files
 tmp/

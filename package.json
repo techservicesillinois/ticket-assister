@@ -9,9 +9,12 @@
     "dev": "rm -rf tmp/contentScripts && cp -r build/scripts/contentScripts/. tmp/contentScripts && NODE_ENV=development vite build -m development && cp -r tmp/contentScripts build/scripts/contentScripts",
     "clean": "rm -rf ./build && rm -rf tmp/contentScripts",
     "test": "vitest",
+    "test-integration": "playwright test",
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@playwright/test": "^1.39.0",
+    "@types/node": "^20.8.9",
     "@types/webextension-polyfill": "^0.10.1",
     "@typescript-eslint/eslint-plugin": "^5.59.8",
     "@typescript-eslint/parser": "^5.59.8",
@@ -22,5 +25,8 @@
     "webextension-polyfill": "^0.10.0"
   },
   "author": "Elijah Mock",
-  "license": "NCSA"
+  "license": "NCSA",
+  "dependencies": {
+    "playwright": "^1.39.0"
+  }
 }
