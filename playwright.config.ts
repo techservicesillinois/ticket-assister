@@ -36,6 +36,10 @@ export default defineConfig({
 			name: "chromium",
 			use: { ...devices["Desktop Chrome"] },
 		},
+		{
+			name: "no-auth",
+			testIgnore: "**/tests/auth/**",
+		},
 		/*
 		{
 			name: "firefox",
