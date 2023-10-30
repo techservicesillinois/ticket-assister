@@ -58,26 +58,35 @@ It has many features, all of which can be toggled on and off in the Options page
 
 ### Automated Deployment
 
-This resository can deploy automatically to the Chrome Web store. 
+This repository partially automates the build pipeline for the Chrome Web store.
 
-> To deploy automatically to the Chrome Web Store, push a tag to the `main` branch.
+1. Update the version in `manifest.json` and `package.json` and merge these changes into main
 
-As of September of 2023, this repository is configured to continue to deploy under the original 'Alpo' developer account. This may change in the future.
+2. `git tag` the latest commit with the version number (e.g., `1.0.0`)
 
-To allow automatic deployment to the Chrome Web Store, add a GitHub repository variable `CHROME_ITEM_ID` with the ID of the Chrome plugin; 
-and a GitHub repository secret `CHROME_TOKEN` set to a Chrome Webstore API key auth token.
+3. A GitHub action will trigger to create a release and associated artifact. Download the artifact zip file
 
-See [Using the Webstore API](https://developer.chrome.com/docs/webstore/using_webstore_api/) for guidance on creating the auth token.
+4. Upload the artifact zip file to the Chrome Web Store via the [developer dashboard](https://chrome.google.com/webstore/devconsole)
+
+
+
+As of September of 2023, this repository is configured to continue to deploy under the original "Alpo" developer account. This may change in the future.
 
 ## Testing
 
 ### Automatic testing
 
-Run unit tests with `npm run test`
+Tests are ran automatically with each commit to a pull request.
+
+Manually run unit tests with `npm run test`
 
 - This verifies that all of the content scripts ("rules") are properly associated
 - This runs basic tests on helper functions
-- These tests are not yet comprehensive, i.e., they do not include integration tests
+
+Manually run integration tests with `npm run test-integration`
+
+- This runs the Playwright test suite
+- As of October 2023, these tests are not yet comprehensive
 
 ### Manual testing
 
