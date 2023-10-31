@@ -64,18 +64,25 @@ export function squishArray(arr: Array<string>): string {
 }
 
 /**
- * Converts a string to a boolean,
- * returning null if not possible
+ * Escapes a string so that it can be used as a literal match
+ * in a {@link RegExp}
+ *
+ * @see https://stackoverflow.com/a/6969486/8804293
+ */
+export function escapeRegExp(str: string): string {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Escapes HTML.
+ * 
+ * Only works when ran on the frontend.
  *
  * @remarks
- * Only will parse "true" or "false"
+ * In the native manner that the browser does.
  */
-export function stringToBoolean(str: string): boolean | null {
-	if (str === "true") {
-		return true;
-	} else if (str === "false") {
-		return false;
-	} else {
-		return null;
-	}
+export function escapeHtml(html: string): string {
+	const p = document.createElement("p");
+	p.textContent = html;
+	return p.innerHTML; // escaped
 }

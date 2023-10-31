@@ -16,6 +16,25 @@ import { prefixRecordWith } from "utils/object";
 export const storageArea = browser.storage.sync;
 
 /**
+ * Retrieves the record stored in {@link storageArea}
+ * or null if not found.
+ *
+ * @remarks
+ * Return type is based on the passed type parameter T,
+ * which is the expected type as stored in storage.
+ *
+ * The browser API will return this type of whatever is *actually*
+ * stored, not necessarily the passed type T.
+ */
+async function grab<T>(key: string): Promise<T | null> {
+	const value = await storageArea.get(key);
+	if (value[key] === undefined) {
+		return null;
+	}
+	return value[key];
+}
+
+/**
  * The prefix before keys in {@link storageArea} for rules
  * in the "Custom" preset
  */
@@ -56,13 +75,8 @@ export async function updateCustomRuleStatusMultiple(optionStatuses: Record<stri
  * can use storageArea.get({ key: defaultValue });
  */
 export async function getCustomRuleStatus(optionName: string): Promise<boolean | null> {
-	const storedName = `${customPresetRulePrefix}${optionName}`;
-	const value = await storageArea.get(storedName);
-	if (value[storedName] === undefined) {
-		return null;
-	}
 	// stored as a boolean
-	return value[storedName];
+	return grab<boolean>(`${customPresetRulePrefix}${optionName}`);
 }
 /**
  * Gets the values (i.e. on or off) of multiple rules
@@ -107,7 +121,9 @@ export async function getCustomRuleStatusMultiple(optionNames: Array<string>): P
  * since all presets should be defined there
  */
 export async function getAllCustomRuleStatuses(): Promise<Record<string, boolean | null>> {
-	return await getCustomRuleStatusMultiple(Object.keys(presets["All Off"]));
+	// I know that this exists. We have tests ensuring it.
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+	return await getCustomRuleStatusMultiple(Object.keys(presets["All Off"]!));
 }
 
 /**
@@ -119,11 +135,7 @@ export async function getAllCustomRuleStatuses(): Promise<Record<string, boolean
  * and rejects on failure
  */
 export async function getCurrentPreset(): Promise<string | null> {
-	const value = await storageArea.get("currentPreset");
-	if (value["currentPreset"] === undefined) {
-		return null;
-	}
-	return value["currentPreset"];
+	return grab<string>("currentPreset");
 }
 /**
  * Updates the current preset in {@link storageArea}
@@ -133,4 +145,47 @@ export async function getCurrentPreset(): Promise<string | null> {
 export async function setCurrentPreset(presetName: string): Promise<void> {
 	await storageArea.set({ currentPreset: presetName });
 	return;
+}
+
+/**
+ * The key to be used for the custom user prefill
+ * when stored in {@link storageArea}.
+ *
+ * @remarks
+ * `ao-` prefix stands for "additional options"
+ * which is where this is set by the user.
+ */
+const prefillKey = "ao-prefill";
+/**
+ * Returns the current prefill response as stored in {@link storageArea}
+ * or null if not set.
+ */
+export async function getCurrentPrefill(): Promise<string | null> {
+	return grab<string>(prefillKey);
+}
+/**
+ * Sets the current prefill response in {@link storageArea}.
+ *
+ * Note that this is a raw set, and user data should be sanitized at this point
+ */
+export async function setCurrentPrefill(prefillData: string): Promise<void> {
+	return await storageArea.set({ [prefillKey]: prefillData });
+}
+
+
+/**
+ * Converts a string to a boolean,
+ * returning null if not possible
+ *
+ * @remarks
+ * Only will parse "true" or "false"
+ */
+function stringToBoolean(str: string): boolean | null {
+	if (str === "true") {
+		return true;
+	} else if (str === "false") {
+		return false;
+	} else {
+		return null;
+	}
 }

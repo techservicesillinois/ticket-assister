@@ -331,7 +331,7 @@ const exportDefault: Array<ToggleableFeature> = [
 	},
 	{
 		name: "TDX/Ticket/Update/Prefill response",
-		description: "Sets a default response when updating tickets according to a template.",
+		description: "Sets a default response when updating tickets according to a template.\nCustomize this response in Additional Options below.",
 		contentScripts: [
 			{
 				url: TICKET_URL.UPDATE,
