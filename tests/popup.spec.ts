@@ -11,8 +11,9 @@ test("Popup page has options button and it opens the options page", async ({ pag
 	await expect(page.locator("button:has-text('Options'), a:has-text('Options')")).toBeVisible();
 
 	const prevUrl = page.url();
+	const newTabPromise = context.waitForEvent("page");
 	await page.locator("button:has-text('Options'), a:has-text('Options')").click();
-	const newTab = await context.waitForEvent("page");
+	const newTab = await newTabPromise;
 	await newTab.waitForLoadState();
 	expect(newTab.url(), "Should have opened a new tab with a different URL").not.toEqual(prevUrl);
 });
@@ -21,8 +22,9 @@ test("Popup page has help button and it opens the help page", async ({ page, ext
 	await expect(page.locator("button:has-text('Help'), a:has-text('Help')")).toBeVisible();
 
 	const prevUrl = page.url();
+	const newTabPromise = context.waitForEvent("page");
 	await page.locator("button:has-text('Options'), a:has-text('Options')").click();
-	const newTab = await context.waitForEvent("page");
+	const newTab = await newTabPromise;
 	await newTab.waitForLoadState();
 	expect(newTab.url(), "Should have opened a new tab with a different URL").not.toEqual(prevUrl);
 });
