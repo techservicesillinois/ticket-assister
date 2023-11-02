@@ -2,7 +2,7 @@
 
 ## [1.3.0] - 2023-11-02
 
-- Added the ability to customize the prefill reponse text when updating a ticket
+- Add the ability to customize the prefill response text when updating a ticket
 - Bug fixes and performance improvements
 
 ## [1.2.0] - 2023-10-02
