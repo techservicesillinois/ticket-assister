@@ -9,7 +9,11 @@ try {
     if (requstor.netid && !requstor.id) {
         // they should have the field filled out (netid exists)
         // and it isn't filled out (tdx id does not exist)
-        getRequestorFieldPanel().style.border = "1px dotted #aa0000";
+        getRequestorFieldPanel().style.background = "#bf393566";
+        const notice = document.createElement("p");
+        notice.textContent = "Requestor field is not filled out.";
+        notice.style.textAlign = "center";
+        getRequestorFieldPanel().appendChild(notice);
     } else {
         log.d("No client NetID or requestor field already filled out; requestor field ok");
     }
